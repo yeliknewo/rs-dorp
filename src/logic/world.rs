@@ -4,10 +4,10 @@ use std::fmt;
 use std::error::Error;
 
 use input::{Keyboard, Mouse, Display, KeyCode, MouseButton, Button};
-use logic::{Id, EntityData, OptErr};
+use logic::{Id, Entity, OptErr};
 use math::{Vec2};
 
-pub struct World<T: EntityData<T>> {
+pub struct World<T: Entity<T>> {
     keyboard: Arc<Keyboard>,
     mouse: Arc<Mouse>,
     display: Arc<Display>,
@@ -16,7 +16,7 @@ pub struct World<T: EntityData<T>> {
     to_remove: Vec<Id>,
 }
 
-impl<T: EntityData<T>> World<T> {
+impl<T: Entity<T>> World<T> {
 
     pub fn new(keyboard: Arc<Keyboard>, mouse: Arc<Mouse>, display: Arc<Display>) -> World<T> {
         World {
@@ -99,12 +99,12 @@ impl<T: EntityData<T>> World<T> {
     }
 
 
-    pub fn get_entity_data(&self) -> Arc<HashMap<Id, Arc<T>>> {
+    pub fn get_entities(&self) -> Arc<HashMap<Id, Arc<T>>> {
         self.entity_data.clone()
     }
 
 
-    pub fn get_mut_entity_data(&mut self) -> Result<&mut HashMap<Id, Arc<T>>, WorldErr> {
+    pub fn get_mut_entities(&mut self) -> Result<&mut HashMap<Id, Arc<T>>, WorldErr> {
         match Arc::get_mut(&mut self.entity_data) {
             Some(entity_data) => Ok(entity_data),
             None => Err(WorldErr::GetMut("Arc Get Mut Self EntityData")),

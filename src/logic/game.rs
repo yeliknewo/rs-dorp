@@ -6,19 +6,19 @@ use time::{precise_time_s};
 use glium::glutin::Event as WindowEvent;
 
 use input::{Keyboard, Mouse, Display, KeyCode, ButtonState, MouseButton, Button};
-use logic::{TickCount, World, WorldErr, EntityData, IdManager};
+use logic::{TickCount, World, WorldErr, Entity, IdManager};
 use math::{Vec2};
 use graphics::{Window, FrameErr, SyncData, Renderers, RenderersErr};
 
-pub struct Game<T: EntityData<T>> {
+pub struct Game<T: Entity<T>> {
     world: Arc<World<T>>,
     sync_data: Arc<SyncData>,
     thread_pool: Pool,
     tick_count: TickCount,
 }
 
-impl<T: EntityData<T>> Game<T> {
-    
+impl<T: Entity<T>> Game<T> {
+
     pub fn new(thread_count: u32, resolution: Vec2) -> Game<T> {
         let keyboard = Arc::new(Keyboard::new());
         let mouse = Arc::new(Mouse::new());
@@ -31,12 +31,12 @@ impl<T: EntityData<T>> Game<T> {
         }
     }
 
-    
+
     pub fn get_world(&self) -> Arc<World<T>> {
         self.world.clone()
     }
 
-    
+
     pub fn get_mut_world(&mut self) -> Result<&mut World<T>, GameErr> {
         match Arc::get_mut(&mut self.world) {
             Some(world) => Ok(world),
@@ -44,17 +44,17 @@ impl<T: EntityData<T>> Game<T> {
         }
     }
 
-    
+
     fn pause(&mut self) {
         println!("Paused");
     }
 
-    
+
     fn resume(&mut self) {
         println!("Resumed");
     }
 
-    
+
     fn update_keyboard(&mut self, tick_number: u64, key_code: KeyCode, element_state: ButtonState) -> Result<(), GameErr> {
         match Arc::get_mut(&mut self.world) {
             Some(world) => {
@@ -67,7 +67,7 @@ impl<T: EntityData<T>> Game<T> {
         }
     }
 
-    
+
     fn update_mouse_button(&mut self, tick_number: u64, mouse_button: MouseButton, element_state: ButtonState) -> Result<(), GameErr> {
         match Arc::get_mut(&mut self.world) {
             Some(world) => {
@@ -80,7 +80,7 @@ impl<T: EntityData<T>> Game<T> {
         }
     }
 
-    
+
     fn update_mouse_pos(&mut self, mouse_pos: (i32, i32)) -> Result<(), GameErr> {
         match Arc::get_mut(&mut self.world) {
             Some(world) => {
@@ -93,7 +93,7 @@ impl<T: EntityData<T>> Game<T> {
         }
     }
 
-    
+
     fn update_resolution(&mut self, resolution: (u32, u32)) -> Result<(), GameErr> {
         match Arc::get_mut(&mut self.world) {
             Some(world) => {
@@ -214,9 +214,9 @@ impl<T: EntityData<T>> Game<T> {
             Some(world) => world,
             None => return Err(GameErr::GetMut("Arc Get Mut Self World")),
         };
-        for (_, entity) in match world.get_mut_entity_data() {
-            Ok(entity_data) => entity_data,
-            Err(err) => return Err(GameErr::World("World Get Mut Entity Data", err)),
+        for (_, entity) in match world.get_mut_entities() {
+            Ok(entity) => entity,
+            Err(err) => return Err(GameErr::World("World Get Mut Entity", err)),
         }.iter_mut() {
             match match Arc::get_mut(entity) {
                     Some(entity) => entity,
@@ -234,8 +234,8 @@ impl<T: EntityData<T>> Game<T> {
             Err(err) => return Err(GameErr::World("World Tick Mut", err)),
         }
         let mut frame = window.frame(renderers);
-        for entry in match world.get_mut_entity_data() {
-            Ok(entity_data) => entity_data,
+        for entry in match world.get_mut_entities() {
+            Ok(entity) => entity,
             Err(err) => {
                 match frame.end() {
                     Ok(_) => (),
@@ -267,7 +267,7 @@ impl<T: EntityData<T>> Game<T> {
             let delta_time = Arc::new(delta_time);
             let tick_count = Arc::new(self.tick_count);
             self.thread_pool.scoped(|scope| {
-                for entry in world.get_entity_data().iter() {
+                for entry in world.get_entities().iter() {
                     let entity = entry.1.clone();
                     let world = world.clone();
                     let delta_time = delta_time.clone();
@@ -284,24 +284,24 @@ impl<T: EntityData<T>> Game<T> {
         match Arc::get_mut(&mut self.world)  {
             Some(world) => {
                 let mut keys = vec!();
-                match world.get_mut_entity_data() {
-                    Ok(entity_data) => {
-                        for key in entity_data.keys() {
+                match world.get_mut_entities() {
+                    Ok(entity) => {
+                        for key in entity.keys() {
                             keys.push(key.clone());
                         }
                     },
-                    Err(err) => return Err(GameErr::World("World Get Mut Entity Data", err)),
+                    Err(err) => return Err(GameErr::World("World Get Mut Entity", err)),
                 }
                 for key in keys {
                     let mut entity: Arc<T> = {
-                        match world.get_mut_entity_data() {
-                            Ok(entity_data) => {
-                                match entity_data.remove(&key) {
+                        match world.get_mut_entities() {
+                            Ok(entities) => {
+                                match entities.remove(&key) {
                                     Some(entity) => entity,
-                                    None => return Err(GameErr::BadIndex("Entity Data Remove")),
+                                    None => return Err(GameErr::BadIndex("Entities Remove")),
                                 }
                             },
-                            Err(err) => return Err(GameErr::World("World Get Mut Entity Data", err)),
+                            Err(err) => return Err(GameErr::World("World Get Mut Entities", err)),
                         }
                     };
                     match match Arc::get_mut(&mut entity) {
@@ -311,11 +311,11 @@ impl<T: EntityData<T>> Game<T> {
                         Ok(()) => (),
                         Err(err) => return Err(GameErr::Entity("Entity Tick Mut", err)),
                     }
-                    match world.get_mut_entity_data() {
-                        Ok(entity_data) => {
-                            entity_data.insert(key, entity);
+                    match world.get_mut_entities() {
+                        Ok(entities) => {
+                            entities.insert(key, entity);
                         }
-                        Err(err) => return Err(GameErr::World("World Get Mut Entity Data", err)),
+                        Err(err) => return Err(GameErr::World("World Get Mut Entity", err)),
                     }
                 }
             },

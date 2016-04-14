@@ -16,7 +16,7 @@ mod err;
 
 pub use self::math::{Mat4, Vec2, Vec3, Vec4, DEG_TO_RAD};
 pub use self::input::{Keyboard, Mouse, Display};
-pub use self::logic::{TickCount, IdManager, Game, World, WorldErr, Id, IdType, EntityData, OptErr};
+pub use self::logic::{TickCount, IdManager, Game, World, WorldErr, Id, IdType, Entity, OptErr};
 pub use self::graphics::{WindowBuilder, Window, SyncData, Renderers, RendererType};
 pub use self::components::{
     Transform, TransformErr,

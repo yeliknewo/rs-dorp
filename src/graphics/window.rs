@@ -6,7 +6,7 @@ use glium::Frame as GliumFrame;
 use std::fmt;
 use std::error::Error;
 
-use logic::{EntityData};
+use logic::{Entity};
 
 use graphics::texture2d::{RendererTex2Err};
 use graphics::solid_color::{RendererSolidColorErr};
@@ -19,7 +19,7 @@ pub struct Frame {
 }
 
 impl Frame {
-    
+
     fn new(facade: & mut GlutinFacade, renderers: Renderers) -> Frame {
         let mut frame  = facade.draw();
         frame.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
@@ -29,8 +29,8 @@ impl Frame {
         }
     }
 
-    
-    pub fn draw_entity<Y: EntityData<Y>>(&mut self, entity: &Y, sync_data: &SyncData) -> Result<(), FrameErr> {
+
+    pub fn draw_entity<T: Entity<T>>(&mut self, entity: &T, sync_data: &SyncData) -> Result<(), FrameErr> {
         match entity.get_renderable() {
             Some(renderable) => {
                 match renderable.get_renderer_type() {
@@ -53,7 +53,7 @@ impl Frame {
         }
     }
 
-    
+
     pub fn end(self) -> Result<Renderers, FrameErr> {
         match self.frame.finish() {
             Ok(()) => Ok(self.renderers),
