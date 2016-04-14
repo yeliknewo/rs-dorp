@@ -1,0 +1,11 @@
+[package]
+name = "dorp"
+version = "0.1.0"
+authors = ["Kiley Owen <owenk@wit.edu>"]
+
+[dependencies]
+glium = "0.13.5"
+time = "0.1.34"
+image = "0.6.1"
+scoped_threadpool = "0.1.7"
+yaml-rust = "0.3.2"
