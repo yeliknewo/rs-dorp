@@ -1,13 +1,13 @@
 use std::collections::{HashMap};
 use std::fmt::{Display, Formatter, Error};
 
-#[derive(Copy, Clone, Eq, Hash, PartialEq, Ord, PartialOrd)]
+#[derive(Debug, Copy, Clone, Eq, Hash, PartialEq, Ord, PartialOrd)]
 pub struct Id {
     id: IdSize,
 }
 
 impl Id {
-    
+
     pub fn new(manager: &mut IdManager, id_type: IdType) -> Id {
         Id {
             id: manager.get_id(id_type),
@@ -44,14 +44,14 @@ pub struct IdManager {
 }
 
 impl IdManager {
-    
+
     pub fn new() -> IdManager {
         IdManager {
             map: HashMap::new(),
         }
     }
 
-    
+
     fn get_id(&mut self, id_type: IdType) -> IdSize {
         let id = match self.map.get(&id_type) {
             Some(id) => *id,

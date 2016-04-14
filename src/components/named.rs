@@ -3,12 +3,12 @@ use std::error::Error;
 
 use logic::{Entity, World, WorldErr, Id};
 
+#[derive(Debug)]
 pub struct Named {
     name: &'static str,
 }
 
 impl Named {
-
     pub fn new<T: Entity<T>>(name: &'static str, id: Id, world: &mut World<T>) -> Result<Named, NamedErr> {
         match world.register_name(id, name) {
             Ok(_) => {
@@ -21,7 +21,6 @@ impl Named {
             Err(err) => Err(NamedErr::World("World Register Name", err)),
         }
     }
-
 
     pub fn get_name(&self) -> &'static str {
         self.name

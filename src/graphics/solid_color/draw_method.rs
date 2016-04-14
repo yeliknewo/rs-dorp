@@ -1,7 +1,7 @@
 use glium::{DrawParameters};
 use glium;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum DrawMethod {
     Both(DepthTestMethod, CullingMethod),
     Depth(DepthTestMethod),
@@ -9,12 +9,12 @@ pub enum DrawMethod {
     Neither,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum DepthTestMethod {
     IfLess,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum CullingMethod {
     Clockwise,
     CounterClockwise,

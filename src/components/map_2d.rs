@@ -3,6 +3,7 @@ use std::hash::{Hash};
 
 use logic::{Id};
 
+#[derive(Debug)]
 pub struct Map2d<T: Hash + Eq + Copy> {
     tiles: HashMap<T, HashMap<T, Id>>,
     dirty_tiles: bool,
@@ -10,7 +11,6 @@ pub struct Map2d<T: Hash + Eq + Copy> {
 }
 
 impl<T: Hash + Eq + Copy> Map2d<T> {
-    
     pub fn new() -> Map2d<T> {
         Map2d {
             tiles: HashMap::new(),
@@ -19,7 +19,6 @@ impl<T: Hash + Eq + Copy> Map2d<T> {
         }
     }
 
-    
     pub fn tick_mut(&mut self) {
         if self.dirty_tiles {
             self.ticks += 1;
@@ -30,7 +29,6 @@ impl<T: Hash + Eq + Copy> Map2d<T> {
         }
     }
 
-    
     pub fn insert(&mut self, x: T, y: T, id: Id) {
         match self.tiles.remove(&y) {
             Some(mut row) => {
@@ -45,7 +43,6 @@ impl<T: Hash + Eq + Copy> Map2d<T> {
         }
     }
 
-    
     pub fn get(&self, x: T, y: T) -> Option<Id> {
         match self.tiles.get(&y) {
             Some(row) => match row.get(&x) {
@@ -56,12 +53,10 @@ impl<T: Hash + Eq + Copy> Map2d<T> {
         }
     }
 
-    
     pub fn get_all(&self) -> &HashMap<T, HashMap<T, Id>> {
         &self.tiles
     }
 
-    
     pub fn is_dirty(&self) -> bool {
         self.dirty_tiles
     }

@@ -11,6 +11,7 @@ use graphics::{SyncData, Window};
 use graphics::vertex_color::{Vertex, init_vertex, Index, DrawMethod, method_to_parameters};
 use logic::{Id};
 
+#[derive(Debug)]
 pub struct RendererVertexColor {
     vertex_buffers: HashMap<Id, VertexBuffer<Vertex>>,
     index_buffers: HashMap<Id, IndexBuffer<Index>>,
@@ -19,7 +20,6 @@ pub struct RendererVertexColor {
 }
 
 impl RendererVertexColor {
-    
     pub fn new(window: &mut Window) -> Result<RendererVertexColor, RendererVertexColorErr> {
         init_vertex();
         let vertex_shader_src = r#"
@@ -63,7 +63,6 @@ impl RendererVertexColor {
         )
     }
 
-    
     pub fn set_vertices(&mut self, id: Id, window: &mut Window, vertices: Vec<Vertex>) -> Result<(), RendererVertexColorErr> {
         self.vertex_buffers.insert(id, match VertexBuffer::new(window.get_facade(), &vertices) {
             Ok(buffer) => buffer,
@@ -72,7 +71,6 @@ impl RendererVertexColor {
         Ok(())
     }
 
-    
     pub fn set_indices(&mut self, id: Id, window: &mut Window, indices: Vec<Index>) -> Result<(), RendererVertexColorErr> {
         self.index_buffers.insert(id, match IndexBuffer::new(window.get_facade(), glium::index::PrimitiveType::TrianglesList, &indices) {
             Ok(buffer) => buffer,
@@ -81,7 +79,6 @@ impl RendererVertexColor {
         Ok(())
     }
 
-    
     pub fn set_draw_method(&mut self, id: Id, draw_method: DrawMethod) {
         self.draw_parameters.insert(id, method_to_parameters(draw_method));
     }

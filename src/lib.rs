@@ -12,7 +12,6 @@ mod logic;
 //mod graphics;
 pub mod graphics;
 mod components;
-mod err;
 
 pub use self::math::{Mat4, Vec2, Vec3, Vec4, DEG_TO_RAD};
 pub use self::input::{Keyboard, Mouse, Display};
@@ -27,4 +26,3 @@ pub use self::components::{
     Map3d, Map3dCoords,
     Scene
 };
-pub use self::err::{Error};

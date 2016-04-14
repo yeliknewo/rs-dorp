@@ -7,6 +7,7 @@ use input::{Keyboard, Mouse, Display, KeyCode, MouseButton, Button};
 use logic::{Id, Entity, OptErr};
 use math::{Vec2};
 
+#[derive(Debug)]
 pub struct World<T: Entity<T>> {
     keyboard: Arc<Keyboard>,
     mouse: Arc<Mouse>,
@@ -17,7 +18,6 @@ pub struct World<T: Entity<T>> {
 }
 
 impl<T: Entity<T>> World<T> {
-
     pub fn new(keyboard: Arc<Keyboard>, mouse: Arc<Mouse>, display: Arc<Display>) -> World<T> {
         World {
             keyboard: keyboard,
@@ -29,7 +29,6 @@ impl<T: Entity<T>> World<T> {
         }
     }
 
-
     pub fn set_key(&mut self, key_code: KeyCode, key: Button) -> Result<(), WorldErr> {
         match Arc::get_mut(&mut self.keyboard){
             Some(keyboard) => {
@@ -39,7 +38,6 @@ impl<T: Entity<T>> World<T> {
             None => Err(WorldErr::GetMut("Arc Get Mut Self Keyboard")),
         }
     }
-
 
     pub fn set_mouse_button(&mut self, mouse_button: MouseButton, button: Button) -> Result<(), WorldErr> {
         match Arc::get_mut(&mut self.mouse) {
@@ -51,7 +49,6 @@ impl<T: Entity<T>> World<T> {
         }
     }
 
-
     pub fn set_mouse_position(&mut self, pos: Vec2) -> Result<(), WorldErr> {
         match Arc::get_mut(&mut self.mouse) {
             Some(mouse) => {
@@ -61,7 +58,6 @@ impl<T: Entity<T>> World<T> {
             None => Err(WorldErr::GetMut("Arc Get Mut Self Mouse")),
         }
     }
-
 
     pub fn set_resolution(&mut self, resolution:  Vec2) -> Result<(), WorldErr> {
         match Arc::get_mut(&mut self.display) {
@@ -73,36 +69,29 @@ impl<T: Entity<T>> World<T> {
         }
     }
 
-
     pub fn get_key(&self, key_code: KeyCode) -> Button {
         self.keyboard.get_key(key_code)
     }
-
 
     pub fn get_mouse_button(&self, mouse_button: MouseButton) -> Button {
         self.mouse.get_button(mouse_button)
     }
 
-
     pub fn get_mouse_position(&self) -> Vec2 {
         self.mouse.get_mouse_position()
     }
-
 
     pub fn get_resolution(&self) -> Vec2 {
         self.display.get_resolution()
     }
 
-
     pub fn get_aspect_ratio(&self) -> f32 {
         self.display.get_aspect_ratio()
     }
 
-
     pub fn get_entities(&self) -> Arc<HashMap<Id, Arc<T>>> {
         self.entity_data.clone()
     }
-
 
     pub fn get_mut_entities(&mut self) -> Result<&mut HashMap<Id, Arc<T>>, WorldErr> {
         match Arc::get_mut(&mut self.entity_data) {
@@ -110,7 +99,6 @@ impl<T: Entity<T>> World<T> {
             None => Err(WorldErr::GetMut("Arc Get Mut Self EntityData")),
         }
     }
-
 
     pub fn add_entity(&mut self, entity: T) -> Result<(), WorldErr> {
         self.add_entity_arc(Arc::new(entity))
@@ -139,11 +127,9 @@ impl<T: Entity<T>> World<T> {
         Ok(())
     }
 
-
     pub fn queue_remove_entity(&mut self, id: Id) {
         self.to_remove.push(id);
     }
-
 
     pub fn get_entity_by_id(&self, id: Id) -> Option<Arc<T>> {
         match self.entity_data.get(&id) {
@@ -153,7 +139,6 @@ impl<T: Entity<T>> World<T> {
             None => None,
         }
     }
-
 
     pub fn get_mut_entity_by_id(&mut self, id: Id) -> OptErr<&mut T, WorldErr> {
         match Arc::get_mut(&mut self.entity_data) {
@@ -168,7 +153,6 @@ impl<T: Entity<T>> World<T> {
         }
     }
 
-
     pub fn take_entity_by_id(&mut self, id: Id) -> OptErr<Arc<T>, WorldErr> {
         match Arc::get_mut(&mut self.entity_data) {
             Some(entity_data) => match entity_data.remove(&id) {
@@ -179,14 +163,12 @@ impl<T: Entity<T>> World<T> {
         }
     }
 
-
     pub fn get_entity_by_name(&self, name: &'static str) -> Option<Arc<T>> {
         match self.names.get(name) {
             Some(id) => self.get_entity_by_id(*id),
             None => None,
         }
     }
-
 
     pub fn get_mut_entity_by_name(&mut self, name: &'static str) -> OptErr<&mut T, WorldErr> {
         let id = *(match self.names.get(name) {
@@ -195,7 +177,6 @@ impl<T: Entity<T>> World<T> {
         });
         self.get_mut_entity_by_id(id)
     }
-
 
     pub fn register_name(&mut self, id: Id, name: &'static str) -> Result<(), WorldErr> {
         match Arc::get_mut(&mut self.names) {
@@ -210,7 +191,6 @@ impl<T: Entity<T>> World<T> {
             None => Err(WorldErr::GetMut("Arc Get Mut Self Names")),
         }
     }
-
 
     pub fn deregister_name(&mut self, name: &'static str) -> Result<(), WorldErr> {
         match Arc::get_mut(&mut self.names) {

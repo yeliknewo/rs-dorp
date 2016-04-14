@@ -5,6 +5,7 @@ use std::fmt;
 
 use logic::{Id};
 
+#[derive(Debug)]
 pub struct Map3d<T: Hash + Eq + Copy> {
     tiles: HashMap<T, HashMap<T, HashMap<T, Id>>>,
     dirty_tiles: bool,
@@ -12,7 +13,6 @@ pub struct Map3d<T: Hash + Eq + Copy> {
 }
 
 impl<T: Hash + Eq + Copy> Map3d<T> {
-
     pub fn new() -> Map3d<T> {
         Map3d {
             tiles: HashMap::new(),
@@ -20,7 +20,6 @@ impl<T: Hash + Eq + Copy> Map3d<T> {
             ticks: 0,
         }
     }
-
 
     pub fn tick_mut(&mut self) {
         if self.dirty_tiles {
@@ -31,7 +30,6 @@ impl<T: Hash + Eq + Copy> Map3d<T> {
             }
         }
     }
-
 
     pub fn insert(&mut self, x: T, y: T, z: T, id: Id) -> Result<(), Map3dErr> {
         if !self.tiles.contains_key(&z) {
@@ -54,7 +52,6 @@ impl<T: Hash + Eq + Copy> Map3d<T> {
         Ok(())
     }
 
-
     pub fn get(&self, x: T, y: T, z: T) -> Option<Id> {
         match self.tiles.get(&z) {
             Some(plane) => match plane.get(&y) {
@@ -68,11 +65,9 @@ impl<T: Hash + Eq + Copy> Map3d<T> {
         }
     }
 
-
     pub fn get_all(&self) -> &HashMap<T, HashMap<T, HashMap<T, Id>>> {
         &self.tiles
     }
-
 
     pub fn is_dirty(&self) -> bool {
         self.dirty_tiles

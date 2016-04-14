@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum OptErr<T, E> {
     Full(T),
     Empty,

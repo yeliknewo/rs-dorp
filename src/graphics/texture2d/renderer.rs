@@ -14,6 +14,7 @@ use components::{Renderable};
 use graphics::{Window, SyncData};
 use graphics::texture2d::{Vertex, Index, DrawMethod, method_to_parameters, init_vertex};
 
+#[derive(Debug)]
 pub struct RendererTex2 {
     vertex_buffers: HashMap<Id, VertexBuffer<Vertex>>,
     index_buffers: HashMap<Id, IndexBuffer<Index>>,
@@ -23,7 +24,6 @@ pub struct RendererTex2 {
 }
 
 impl RendererTex2 {
-    
     pub fn new(window: &mut Window) -> Result<RendererTex2, RendererTex2Err> {
         init_vertex();
         let vertex_shader_src = r#"
@@ -70,7 +70,6 @@ impl RendererTex2 {
         )
     }
 
-    
     pub fn set_vertices(&mut self, id: Id, window: &mut Window, vertices: Vec<Vertex>) -> Result<(), RendererTex2Err> {
         self.vertex_buffers.insert(id, match VertexBuffer::new(window.get_facade(), &vertices) {
             Ok(buffer) => buffer,
@@ -79,7 +78,6 @@ impl RendererTex2 {
         Ok(())
     }
 
-    
     pub fn set_indices(&mut self, id: Id, window: &mut Window, indices: Vec<Index>) -> Result<(), RendererTex2Err> {
         self.index_buffers.insert(id, match IndexBuffer::new(window.get_facade(), glium::index::PrimitiveType::TrianglesList, &indices) {
             Ok(buffer) => buffer,
@@ -88,7 +86,6 @@ impl RendererTex2 {
         Ok(())
     }
 
-    
     pub fn set_texture(&mut self, id: Id, window: &mut Window, data: &[u8]) -> Result<(), RendererTex2Err> {
         let texture = match load_from_memory(data) {
             Ok(texture) => texture,
@@ -101,7 +98,6 @@ impl RendererTex2 {
         Ok(())
     }
 
-    
     pub fn set_draw_method(&mut self, id: Id, draw_method: DrawMethod) {
         self.draw_parameters.insert(id, method_to_parameters(draw_method));
     }

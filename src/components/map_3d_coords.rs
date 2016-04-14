@@ -5,6 +5,7 @@ use std::fmt;
 use logic::{Id};
 use components::{Map3d, Map3dErr};
 
+#[derive(Debug)]
 pub struct Map3dCoords<T: Hash + Eq + Copy> {
     x: T,
     y: T,
@@ -12,7 +13,6 @@ pub struct Map3dCoords<T: Hash + Eq + Copy> {
 }
 
 impl<T: Hash + Eq + Copy> Map3dCoords<T> {
-
     pub fn new(x: T, y: T, z: T) -> Map3dCoords<T> {
         Map3dCoords {
             x: x,
@@ -21,7 +21,6 @@ impl<T: Hash + Eq + Copy> Map3dCoords<T> {
         }
     }
 
-
     pub fn register(&self, id: Id, map_3d: &mut Map3d<T>) -> Result<(), Map3dCoordsErr> {
         match map_3d.insert(self.x, self.y, self.z, id) {
             Ok(()) => Ok(()),
@@ -29,16 +28,13 @@ impl<T: Hash + Eq + Copy> Map3dCoords<T> {
         }
     }
 
-
     pub fn get_x(&self) -> T {
         self.x
     }
 
-
     pub fn get_y(&self) -> T {
         self.y
     }
-
 
     pub fn get_z(&self) -> T {
         self.z

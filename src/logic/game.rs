@@ -18,7 +18,6 @@ pub struct Game<T: Entity<T>> {
 }
 
 impl<T: Entity<T>> Game<T> {
-
     pub fn new(thread_count: u32, resolution: Vec2) -> Game<T> {
         let keyboard = Arc::new(Keyboard::new());
         let mouse = Arc::new(Mouse::new());
@@ -31,11 +30,9 @@ impl<T: Entity<T>> Game<T> {
         }
     }
 
-
     pub fn get_world(&self) -> Arc<World<T>> {
         self.world.clone()
     }
-
 
     pub fn get_mut_world(&mut self) -> Result<&mut World<T>, GameErr> {
         match Arc::get_mut(&mut self.world) {
@@ -44,16 +41,13 @@ impl<T: Entity<T>> Game<T> {
         }
     }
 
-
     fn pause(&mut self) {
         println!("Paused");
     }
 
-
     fn resume(&mut self) {
         println!("Resumed");
     }
-
 
     fn update_keyboard(&mut self, tick_number: u64, key_code: KeyCode, element_state: ButtonState) -> Result<(), GameErr> {
         match Arc::get_mut(&mut self.world) {
@@ -67,7 +61,6 @@ impl<T: Entity<T>> Game<T> {
         }
     }
 
-
     fn update_mouse_button(&mut self, tick_number: u64, mouse_button: MouseButton, element_state: ButtonState) -> Result<(), GameErr> {
         match Arc::get_mut(&mut self.world) {
             Some(world) => {
@@ -80,7 +73,6 @@ impl<T: Entity<T>> Game<T> {
         }
     }
 
-
     fn update_mouse_pos(&mut self, mouse_pos: (i32, i32)) -> Result<(), GameErr> {
         match Arc::get_mut(&mut self.world) {
             Some(world) => {
@@ -92,7 +84,6 @@ impl<T: Entity<T>> Game<T> {
             None => Err(GameErr::GetMut("Arc Get Mut Self World")),
         }
     }
-
 
     fn update_resolution(&mut self, resolution: (u32, u32)) -> Result<(), GameErr> {
         match Arc::get_mut(&mut self.world) {
