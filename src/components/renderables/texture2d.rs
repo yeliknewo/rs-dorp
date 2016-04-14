@@ -7,6 +7,7 @@ use math::{Mat4};
 use graphics::{Window, WindowErr, SyncData, Renderers};
 use graphics::texture2d::{Vertex, Index, DrawMethod, RendererTex2Err};
 
+#[derive(Debug)]
 struct Changes {
     vertices: Option<Vec<Vertex>>,
     indices: Option<Vec<Index>>,
@@ -19,7 +20,7 @@ struct Changes {
 }
 
 impl Changes {
-    
+
     pub fn new() -> Changes {
         Changes {
             vertices: None,
@@ -33,7 +34,7 @@ impl Changes {
         }
     }
 
-    
+
     pub fn new_from(other: &Changes) -> Changes {
         Changes {
             vertices: other.vertices.clone(),
@@ -48,6 +49,7 @@ impl Changes {
     }
 }
 
+#[derive(Debug)]
 pub struct RenderableTex2 {
     vertex_id: Id,
     index_id: Id,
@@ -60,7 +62,7 @@ pub struct RenderableTex2 {
 }
 
 impl RenderableTex2 {
-    
+
     pub fn new(manager: &mut IdManager) -> RenderableTex2 {
         RenderableTex2 {
             vertex_id: Id::new(manager, IdType::Vertex),
@@ -74,7 +76,7 @@ impl RenderableTex2 {
         }
     }
 
-    
+
     pub fn new_from(other: Arc<RenderableTex2>) -> RenderableTex2 {
         RenderableTex2 {
             vertex_id: other.vertex_id,
@@ -153,114 +155,114 @@ impl RenderableTex2 {
         Ok(())
     }
 
-    
+
     pub fn set_vertices(&mut self, vertices: Vec<Vertex>) {
         self.changes.vertices = Some(vertices);
         self.changes.dirty_render = true;
     }
 
-    
+
     pub fn set_indices(&mut self, indices: Vec<Index>) {
         self.changes.indices = Some(indices);
         self.changes.dirty_render = true;
     }
 
-    
+
     pub fn set_texture(&mut self, texture: &'static [u8]) {
         self.changes.texture = Some(texture);
         self.changes.dirty_render = true;
     }
 
-    
+
     pub fn set_draw_method(&mut self, draw_method: DrawMethod) {
         self.changes.draw_method = Some(draw_method);
         self.changes.dirty_render = true;
     }
 
-    
+
     pub fn set_perspective(&mut self, matrix: Mat4) {
         self.changes.perspective = Some((matrix, matrix.to_inverse()));
         self.changes.dirty_render = true;
     }
 
-    
+
     pub fn set_view(&mut self, matrix: Mat4) {
         self.changes.view = Some((matrix, matrix.to_inverse()));
         self.changes.dirty_render = true;
     }
 
-    
+
     pub fn set_model(&mut self, matrix: Mat4) {
         self.changes.model = Some((matrix, matrix.to_inverse()));
         self.changes.dirty_render = true;
     }
 
-    
+
     pub fn set_vertex_id(&mut self, id: Id) {
         self.vertex_id = id;
     }
 
-    
+
     pub fn set_index_id(&mut self, id: Id) {
         self.index_id = id;
     }
 
-    
+
     pub fn set_texture_id(&mut self, id: Id) {
         self.texture_id = id;
     }
 
-    
+
     pub fn set_draw_method_id(&mut self, id: Id) {
         self.draw_method_id = id;
     }
 
-    
+
     pub fn set_perspective_id(&mut self, id: Id) {
         self.perspective_id = id;
     }
 
-    
+
     pub fn set_view_id(&mut self, id: Id) {
         self.view_id = id;
     }
 
-    
+
     pub fn set_model_id(&mut self, id: Id) {
         self.model_id = id;
     }
 
-    
+
     pub fn get_vertex_id(&self) -> Id {
         self.vertex_id
     }
 
-    
+
     pub fn get_index_id(&self) -> Id {
         self.index_id
     }
 
-    
+
     pub fn get_texture_id(&self) -> Id {
         self.texture_id
     }
 
-    
+
     pub fn get_draw_method_id(&self) -> Id {
         self.draw_method_id
     }
 
-    
+
     pub fn get_perspective_id(&self) -> Id {
         self.perspective_id
     }
 
-    
+
     pub fn get_view_id(&self) -> Id {
         self.view_id
     }
 
-    
+
     pub fn get_model_id(&self) -> Id {
         self.model_id
     }

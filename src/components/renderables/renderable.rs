@@ -6,6 +6,7 @@ use graphics::{RendererType, Window, SyncData, Renderers};
 use components::renderables::{RenderableTex2, RenderableTex2Err, RenderableVertexColor, RenderableVertexColorErr, RenderableSolidColor, RenderableSolidColorErr};
 use math::{Mat4};
 
+#[derive(Debug)]
 pub struct Renderable {
     renderer_type: RendererType,
     texture2d: Option<Arc<RenderableTex2>>,
