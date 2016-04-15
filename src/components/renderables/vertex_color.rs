@@ -1,11 +1,10 @@
 use std::sync::{Arc};
-use std::fmt;
-use std::error::Error;
 
 use logic::{Id, IdManager, IdType};
 use graphics::{Window, SyncData, Renderers};
-use graphics::vertex_color::{Vertex, Index, DrawMethod, RendererVertexColorErr};
+use graphics::vertex_color::{Vertex, Index, DrawMethod};
 use math::{Mat4};
+use err::DorpErr;
 
 #[derive(Debug)]
 struct Changes {
@@ -84,19 +83,19 @@ impl RenderableVertexColor {
         }
     }
 
-    pub fn render(&mut self, window: &mut Window, sync_data: &mut SyncData, renderers: &mut Renderers) -> Result<(), RenderableVertexColorErr> {
+    pub fn render(&mut self, window: &mut Window, sync_data: &mut SyncData, renderers: &mut Renderers) -> Result<(), DorpErr> {
         if self.changes.dirty_render {
             match self.changes.vertices.clone() {
                 Some(vertices) => match renderers.get_mut_vertex_color().set_vertices(self.vertex_id, window, vertices) {
                     Ok(()) => (),
-                    Err(err) => return Err(RenderableVertexColorErr::RendererVertexColor("Renderers Get Mut Solid Color Set Vertices", err)),
+                    Err(err) => return Err(DorpErr::Dorp("Renderers Get Mut Solid Color Set Vertices", Box::new(err))),
                 },
                 None => (),
             }
             match self.changes.indices.clone() {
                 Some(indices) => match renderers.get_mut_vertex_color().set_indices(self.index_id, window, indices) {
                     Ok(()) => (),
-                    Err(err) => return Err(RenderableVertexColorErr::RendererVertexColor("Renderers Get Mut Solid Color Set Indices", err)),
+                    Err(err) => return Err(DorpErr::Dorp("Renderers Get Mut Solid Color Set Indices", Box::new(err))),
                 },
                 None => (),
             }
@@ -221,31 +220,5 @@ impl RenderableVertexColor {
 
     pub fn get_model_id(&self) -> Id {
         self.model_id
-    }
-}
-
-#[derive(Debug)]
-pub enum RenderableVertexColorErr {
-    // Poison(&'static str),
-    RendererVertexColor(&'static str, RendererVertexColorErr),
-}
-
-impl fmt::Display for RenderableVertexColorErr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            // RenderableVertexColorErr::Poison(_) => write!(f, "Thread was Poisoned During R/W"),
-            RenderableVertexColorErr::RendererVertexColor(_, ref err) => err.fmt(f),
-        }
-    }
-}
-
-impl Error for RenderableVertexColorErr {
-    fn description(&self) -> &str {
-        match *self {
-            // RenderableVertexColorErr::Poison(_) => "Thread was Poisoned",
-            RenderableVertexColorErr::RendererVertexColor(_, ref err) => err.description(),
-            // RenderableTex2Err::Window(_, ref err) => err.description(),
-            // RenderableTex2Err::RendererTex2(_, ref err) => err.description(),
-        }
     }
 }

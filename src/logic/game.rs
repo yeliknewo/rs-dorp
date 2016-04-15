@@ -1,14 +1,13 @@
 use std::sync::{Arc};
-use std::fmt;
-use std::error::{Error};
 use scoped_threadpool::{Pool};
 use time::{precise_time_s};
 use glium::glutin::Event as WindowEvent;
 
 use input::{Keyboard, Mouse, Display, KeyCode, ButtonState, MouseButton, Button};
-use logic::{TickCount, World, WorldErr, Entity, IdManager};
+use logic::{TickCount, World, Entity, IdManager};
 use math::{Vec2};
-use graphics::{Window, FrameErr, SyncData, Renderers, RenderersErr};
+use graphics::{Window, SyncData, Renderers};
+use err::{DorpErr};
 
 pub struct Game<T: Entity<T>> {
     world: Arc<World<T>>,
@@ -34,10 +33,10 @@ impl<T: Entity<T>> Game<T> {
         self.world.clone()
     }
 
-    pub fn get_mut_world(&mut self) -> Result<&mut World<T>, GameErr> {
+    pub fn get_mut_world(&mut self) -> Result<&mut World<T>, DorpErr> {
         match Arc::get_mut(&mut self.world) {
             Some(world) => Ok(world),
-            None => Err(GameErr::GetMut("Arc Get Mut Self World")),
+            None => Err(DorpErr::Base("Arc Get Mut Self World")),
         }
     }
 
@@ -49,58 +48,58 @@ impl<T: Entity<T>> Game<T> {
         println!("Resumed");
     }
 
-    fn update_keyboard(&mut self, tick_number: u64, key_code: KeyCode, element_state: ButtonState) -> Result<(), GameErr> {
+    fn update_keyboard(&mut self, tick_number: u64, key_code: KeyCode, element_state: ButtonState) -> Result<(), DorpErr> {
         match Arc::get_mut(&mut self.world) {
             Some(world) => {
                 match world.set_key(key_code, Button::new(tick_number, element_state)) {
                     Ok(_) => Ok(()),
-                    Err(err) => Err(GameErr::World("World Set Key", err)),
+                    Err(err) => Err(DorpErr::Dorp("World Set Key", Box::new(err))),
                 }
             },
-            None => Err(GameErr::GetMut("Arc Get Mut Self World")),
+            None => Err(DorpErr::Base("Arc Get Mut Self World was none")),
         }
     }
 
-    fn update_mouse_button(&mut self, tick_number: u64, mouse_button: MouseButton, element_state: ButtonState) -> Result<(), GameErr> {
+    fn update_mouse_button(&mut self, tick_number: u64, mouse_button: MouseButton, element_state: ButtonState) -> Result<(), DorpErr> {
         match Arc::get_mut(&mut self.world) {
             Some(world) => {
                 match world.set_mouse_button(mouse_button, Button::new(tick_number, element_state)) {
                     Ok(()) => Ok(()),
-                    Err(err) => Err(GameErr::World("World Set Mouse Button", err)),
+                    Err(err) => Err(DorpErr::Dorp("World Set Mouse Button", Box::new(err))),
                 }
             }
-            None => Err(GameErr::GetMut("Arc Get Mut Self World")),
+            None => Err(DorpErr::Base("Arc Get Mut Self World was none")),
         }
     }
 
-    fn update_mouse_pos(&mut self, mouse_pos: (i32, i32)) -> Result<(), GameErr> {
+    fn update_mouse_pos(&mut self, mouse_pos: (i32, i32)) -> Result<(), DorpErr> {
         match Arc::get_mut(&mut self.world) {
             Some(world) => {
                 match world.set_mouse_position(Vec2::from([mouse_pos.0 as f32, mouse_pos.1 as f32])) {
                     Ok(()) => Ok(()),
-                    Err(err) => Err(GameErr::World("World Set Mouse Position", err)),
+                    Err(err) => Err(DorpErr::Dorp("World Set Mouse Position", Box::new(err))),
                 }
             },
-            None => Err(GameErr::GetMut("Arc Get Mut Self World")),
+            None => Err(DorpErr::Base("Arc Get Mut Self World was none")),
         }
     }
 
-    fn update_resolution(&mut self, resolution: (u32, u32)) -> Result<(), GameErr> {
+    fn update_resolution(&mut self, resolution: (u32, u32)) -> Result<(), DorpErr> {
         match Arc::get_mut(&mut self.world) {
             Some(world) => {
                 match world.set_resolution(Vec2::from([resolution.0 as f32, resolution.1 as f32])) {
                     Ok(()) => Ok(()),
-                    Err(err) => Err(GameErr::World("World Set Resolution", err)),
+                    Err(err) => Err(DorpErr::Dorp("World Set Resolution", Box::new(err))),
                 }
             },
-            None => Err(GameErr::GetMut("Arc Get Mut Self World")),
+            None => Err(DorpErr::Base("Arc Get Mut Self World was none")),
         }
     }
 
-    pub fn run(&mut self, window: &mut Window, manager: &mut IdManager) -> Result<(), GameErr> {
+    pub fn run(&mut self, window: &mut Window, manager: &mut IdManager) -> Result<(), DorpErr> {
         let mut renderers = match Renderers::new(window) {
             Ok(renderers) => renderers,
-            Err(err) => return Err(GameErr::Renderers("Renderers New", err)),
+            Err(err) => return Err(DorpErr::Dorp("Renderers New", Box::new(err))),
         };
 
         let tps: f64 = 60.0;
@@ -125,7 +124,7 @@ impl<T: Entity<T>> Game<T> {
                     match event {
                         WindowEvent::Resized(width, height) => match self.update_resolution((width, height)) {
                             Ok(()) => (),
-                            Err(err) => return Err(GameErr::Game("Self Update Resolution", Box::new(err))),
+                            Err(err) => return Err(DorpErr::Dorp("Self Update Resolution", Box::new(err))),
                         },
                         // WindowEvent::Moved(x, y) => {
                         //
@@ -147,20 +146,20 @@ impl<T: Entity<T>> Game<T> {
                         WindowEvent::KeyboardInput(element_state, _, virtual_key_code) => match virtual_key_code {
                             Some(virtual_key_code) => match self.update_keyboard(tick_number, virtual_key_code, element_state) {
                                 Ok(()) => (),
-                                Err(err) => return Err(GameErr::Game("Self Update Keyboard", Box::new(err))),
+                                Err(err) => return Err(DorpErr::Dorp("Self Update Keyboard", Box::new(err))),
                             },
                             None => (),
                         },
                         WindowEvent::MouseMoved(pos) => match self.update_mouse_pos(pos) {
                             Ok(()) => (),
-                            Err(err) => return Err(GameErr::Game("Self Update Mouse Pos", Box::new(err))),
+                            Err(err) => return Err(DorpErr::Dorp("Self Update Mouse Pos", Box::new(err))),
                         },
                         // WindowEvent::MouseWheel(mouse_scroll_data) => {
                         //
                         // },
                         WindowEvent::MouseInput(element_state, mouse_button) => match self.update_mouse_button(tick_number, mouse_button, element_state) {
                             Ok(()) => (),
-                            Err(err) => return Err(GameErr::Game("Self Update Mouse Button", Box::new(err))),
+                            Err(err) => return Err(DorpErr::Dorp("Self Update Mouse Button", Box::new(err))),
                         },
                         // WindowEvent::Awakened => {
                         //
@@ -179,7 +178,7 @@ impl<T: Entity<T>> Game<T> {
                 }
                 match self.tick(tps_s, manager) {
                     Ok(()) => (),
-                    Err(err) => return Err(GameErr::Game("Self Tick", Box::new(err))),
+                    Err(err) => return Err(DorpErr::Dorp("Self Tick", Box::new(err))),
                 };
                 delta_time -= tps_s;
                 ticks += 1;
@@ -187,7 +186,7 @@ impl<T: Entity<T>> Game<T> {
             }
             renderers = match self.render(window, renderers) {
                 Ok(renderers) => renderers,
-                Err(err) => return Err(GameErr::Game("Self Render", Box::new(err))),
+                Err(err) => return Err(DorpErr::Dorp("Self Render", Box::new(err))),
             };
             frames += 1;
             if now > i + 1.0 {
@@ -199,30 +198,30 @@ impl<T: Entity<T>> Game<T> {
         }
     }
 
-    fn render(&mut self, window: &mut Window, renderers: Renderers) -> Result<Renderers, GameErr> {
+    fn render(&mut self, window: &mut Window, renderers: Renderers) -> Result<Renderers, DorpErr> {
         let mut renderers = renderers;
         let mut world = match Arc::get_mut(&mut self.world) {
             Some(world) => world,
-            None => return Err(GameErr::GetMut("Arc Get Mut Self World")),
+            None => return Err(DorpErr::Base("Arc Get Mut Self World was none")),
         };
         for (_, entity) in match world.get_mut_entities() {
             Ok(entity) => entity,
-            Err(err) => return Err(GameErr::World("World Get Mut Entity", err)),
+            Err(err) => return Err(DorpErr::Dorp("World Get Mut Entity", Box::new(err))),
         }.iter_mut() {
             match match Arc::get_mut(entity) {
                     Some(entity) => entity,
-                    None => return Err(GameErr::GetMut("Arc Get Mut Entity")),
+                    None => return Err(DorpErr::Base("Arc Get Mut Entity was none")),
                 }.render(window, match Arc::get_mut(&mut self.sync_data) {
-                    Some(matrix_data) => matrix_data,
-                    None => return Err(GameErr::GetMut("Arc Get Mut Self Matrix Data")),
+                    Some(sync_data) => sync_data,
+                    None => return Err(DorpErr::Base("Arc Get Mut Self Matrix Data was none")),
                 }, &mut renderers) {
                 Ok(()) => (),
-                Err(err) => return Err(GameErr::Entity("Entity Render", err)),
+                Err(err) => return Err(DorpErr::Error("Entity Render", err)),
             }
         }
         match world.tick_mut() {
             Ok(()) => (),
-            Err(err) => return Err(GameErr::World("World Tick Mut", err)),
+            Err(err) => return Err(DorpErr::Dorp("World Tick Mut", Box::new(err))),
         }
         let mut frame = window.frame(renderers);
         for entry in match world.get_mut_entities() {
@@ -230,9 +229,9 @@ impl<T: Entity<T>> Game<T> {
             Err(err) => {
                 match frame.end() {
                     Ok(_) => (),
-                    Err(err) => return Err(GameErr::Frame("Frame End", err)),
+                    Err(err) => return Err(DorpErr::Dorp("Frame End", Box::new(err))),
                 };
-                return Err(GameErr::World("World Get Mut Entity Data", err))
+                return Err(DorpErr::Dorp("World Get Mut Entity Data", Box::new(err)))
             },
         }.iter() {
             match frame.draw_entity(entry.1.as_ref(), self.sync_data.as_ref()) {
@@ -240,19 +239,19 @@ impl<T: Entity<T>> Game<T> {
                 Err(err) => {
                     match frame.end() {
                         Ok(_) => (),
-                        Err(err) => return Err(GameErr::Frame("Frame End", err)),
+                        Err(err) => return Err(DorpErr::Dorp("Frame End", Box::new(err))),
                     }
-                    return Err(GameErr::Frame("Frame Draw Entity", err))
+                    return Err(DorpErr::Dorp("Frame Draw Entity", Box::new(err)))
                 },
             };
         }
         match frame.end() {
             Ok(renderers) => Ok(renderers),
-            Err(err) => Err(GameErr::Frame("Frame End", err)),
+            Err(err) => Err(DorpErr::Dorp("Frame End", Box::new(err))),
         }
     }
 
-    fn tick(&mut self, delta_time: f64, manager: &mut IdManager) -> Result<(), GameErr> {
+    fn tick(&mut self, delta_time: f64, manager: &mut IdManager) -> Result<(), DorpErr> {
         {
             let world = self.world.clone();
             let delta_time = Arc::new(delta_time);
@@ -266,7 +265,7 @@ impl<T: Entity<T>> Game<T> {
                     scope.execute(move || {
                         match entity.tick(tick_count, delta_time, world) {
                             Ok(()) => (),
-                            Err(err) => Err(GameErr::Entity("Entity Tick", err)).unwrap(),
+                            Err(err) => Err(("Entity Tick", err)).unwrap(),
                         }
                     });
                 }
@@ -281,7 +280,7 @@ impl<T: Entity<T>> Game<T> {
                             keys.push(key.clone());
                         }
                     },
-                    Err(err) => return Err(GameErr::World("World Get Mut Entity", err)),
+                    Err(err) => return Err(DorpErr::Dorp("World Get Mut Entity", Box::new(err))),
                 }
                 for key in keys {
                     let mut entity: Arc<T> = {
@@ -289,72 +288,33 @@ impl<T: Entity<T>> Game<T> {
                             Ok(entities) => {
                                 match entities.remove(&key) {
                                     Some(entity) => entity,
-                                    None => return Err(GameErr::BadIndex("Entities Remove")),
+                                    None => return Err(DorpErr::Base("Entities Remove was none")),
                                 }
                             },
-                            Err(err) => return Err(GameErr::World("World Get Mut Entities", err)),
+                            Err(err) => return Err(DorpErr::Dorp("World Get Mut Entities", Box::new(err))),
                         }
                     };
                     match match Arc::get_mut(&mut entity) {
                         Some(entity) => entity,
-                        None => return Err(GameErr::GetMut("Arc Get Mut Entity")),
+                        None => return Err(DorpErr::Base("Arc Get Mut Entity was none")),
                     }.tick_mut(self.tick_count, manager, world, match Arc::get_mut(&mut self.sync_data) {
                         Some(matrix_data) => matrix_data,
-                        None => return Err(GameErr::GetMut("Arc Get Mut Self Matrix Data")),
+                        None => return Err(DorpErr::Base("Arc Get Mut Self Matrix Data was none")),
                     }) {
                         Ok(()) => (),
-                        Err(err) => return Err(GameErr::Entity("Entity Tick Mut", err)),
+                        Err(err) => return Err(DorpErr::Error("Entity Tick Mut", err)),
                     }
                     match world.get_mut_entities() {
                         Ok(entities) => {
                             entities.insert(key, entity);
                         }
-                        Err(err) => return Err(GameErr::World("World Get Mut Entity", err)),
+                        Err(err) => return Err(DorpErr::Dorp("World Get Mut Entity", Box::new(err))),
                     }
                 }
             },
-            None => return Err(GameErr::GetMut("Arc Get Mut Self World")),
+            None => return Err(DorpErr::Base("Arc Get Mut Self World was none")),
         }
         self.tick_count += 1;
         Ok(())
-    }
-}
-
-#[derive(Debug)]
-pub enum GameErr {
-    World(&'static str, WorldErr),
-    Game(&'static str, Box<GameErr>),
-    Entity(&'static str, Box<Error>),
-    Frame(&'static str, FrameErr),
-    Renderers(&'static str, RenderersErr),
-    GetMut(&'static str),
-    BadIndex(&'static str),
-}
-
-impl fmt::Display for GameErr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            GameErr::World(_, ref err) => err.fmt(f),
-            GameErr::Game(_, ref err) => err.fmt(f),
-            GameErr::Entity(_, ref err) => err.fmt(f),
-            GameErr::Frame(_, ref err) => err.fmt(f),
-            GameErr::Renderers(_, ref err) => err.fmt(f),
-            GameErr::GetMut(_) => write!(f, "Get Mut was None"),
-            GameErr::BadIndex(_) => write!(f, "Index was None"),
-        }
-    }
-}
-
-impl Error for GameErr {
-    fn description(&self) -> &str {
-        match *self {
-            GameErr::World(_, ref err) => err.description(),
-            GameErr::Game(_, ref err) => err.description(),
-            GameErr::Entity(_, ref err) => err.description(),
-            GameErr::Frame(_, ref err) => err.description(),
-            GameErr::Renderers(_, ref err) => err.description(),
-            GameErr::GetMut(_) => "Get Mut was None",
-            GameErr::BadIndex(_) => "Index was None",
-        }
     }
 }

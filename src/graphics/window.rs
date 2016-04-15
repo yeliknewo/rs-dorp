@@ -1,16 +1,11 @@
 use glium::backend::glutin_backend::{GlutinFacade, PollEventsIter};
 use glium::glutin::WindowBuilder as GlutinWindowBuilder;
-use glium::glutin::{CreationError, get_primary_monitor};
-use glium::{Surface, DisplayBuild, GliumCreationError, SwapBuffersError};
+use glium::glutin::{get_primary_monitor};
+use glium::{Surface, DisplayBuild};
 use glium::Frame as GliumFrame;
-use std::fmt;
-use std::error::Error;
 
 use logic::{Entity};
-
-use graphics::texture2d::{RendererTex2Err};
-use graphics::solid_color::{RendererSolidColorErr};
-use graphics::vertex_color::{RendererVertexColorErr};
+use err::DorpErr;
 use graphics::{Renderers, RendererType, SyncData};
 
 pub struct Frame {
@@ -30,23 +25,23 @@ impl Frame {
     }
 
 
-    pub fn draw_entity<T: Entity<T>>(&mut self, entity: &T, sync_data: &SyncData) -> Result<(), FrameErr> {
+    pub fn draw_entity<T: Entity<T>>(&mut self, entity: &T, sync_data: &SyncData) -> Result<(), DorpErr> {
         match entity.get_renderable() {
             Some(renderable) => {
                 match renderable.get_renderer_type() {
                     RendererType::SolidColor => match self.renderers.get_mut_solid_color().render(&mut self.frame, renderable, sync_data) {
                         Ok(()) => Ok(()),
-                        Err(err) => Err(FrameErr::RendererSolidColor("Self RendererSolidColor Render", err)),
+                        Err(err) => Err(DorpErr::Dorp("Self RendererSolidColor Render", Box::new(err))),
                     },
                     RendererType::VertexColor => match self.renderers.get_mut_vertex_color().render(&mut self.frame, renderable, sync_data) {
                         Ok(()) => Ok(()),
-                        Err(err) => Err(FrameErr::RendererVertexColor("Self RendererVertexColor Render", err)),
+                        Err(err) => Err(DorpErr::Dorp("Self RendererVertexColor Render", Box::new(err))),
                     },
                     RendererType::Texture2d => match self.renderers.get_mut_texture2d().render(&mut self.frame, renderable, sync_data) {
                         Ok(()) => Ok(()),
-                        Err(err) => Err(FrameErr::RendererTex2("Self Renderer Texture2d Render", err)),
+                        Err(err) => Err(DorpErr::Dorp("Self Renderer Texture2d Render", Box::new(err))),
                     },
-                    RendererType::Empty => return Err(FrameErr::RendererType("RendererType Was Empty")),
+                    RendererType::Empty => return Err(DorpErr::Base("RendererType Was Empty")),
                 }
             },
             None => Ok(()),
@@ -54,43 +49,10 @@ impl Frame {
     }
 
 
-    pub fn end(self) -> Result<Renderers, FrameErr> {
+    pub fn end(self) -> Result<Renderers, DorpErr> {
         match self.frame.finish() {
             Ok(()) => Ok(self.renderers),
-            Err(err) => Err(FrameErr::SwapBuffers("Self Frame Finish", err)),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum FrameErr {
-    SwapBuffers(&'static str, SwapBuffersError),
-    RendererTex2(&'static str, RendererTex2Err),
-    RendererSolidColor(&'static str, RendererSolidColorErr),
-    RendererVertexColor(&'static str, RendererVertexColorErr),
-    RendererType(&'static str),
-}
-
-impl fmt::Display for FrameErr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            FrameErr::SwapBuffers(_, ref err) => err.fmt(f),
-            FrameErr::RendererTex2(_, ref err) => err.fmt(f),
-            FrameErr::RendererSolidColor(_, ref err) => err.fmt(f),
-            FrameErr::RendererVertexColor(_, ref err) => err.fmt(f),
-            FrameErr::RendererType(_) => write!(f, "Renderer Type Was Empty"),
-        }
-    }
-}
-
-impl Error for FrameErr {
-    fn description(&self) -> &str {
-        match *self {
-            FrameErr::SwapBuffers(_, ref err) => err.description(),
-            FrameErr::RendererTex2(_, ref err) => err.description(),
-            FrameErr::RendererSolidColor(_, ref err) => err.description(),
-            FrameErr::RendererVertexColor(_, ref err) => err.description(),
-            FrameErr::RendererType(_) => "Renderer Type Was Empty",
+            Err(err) => Err(DorpErr::GliumSwapBuffers("Self Frame Finish", err)),
         }
     }
 }
@@ -148,7 +110,7 @@ impl WindowBuilder {
         self
     }
 
-    pub fn build(self) -> Result<(Window, (u32, u32)), WindowErr> {
+    pub fn build(self) -> Result<(Window, (u32, u32)), DorpErr> {
         let resolution: (u32, u32) = get_primary_monitor().get_dimensions();
         Ok(
             (
@@ -163,11 +125,11 @@ impl WindowBuilder {
                                 .with_vsync()
                                 .build_glium() {
                                     Ok(facade) => facade,
-                                    Err(err) => return Err(WindowErr::GliumCreation("GlutinWindowBuilder Build Glium", err)),
+                                    Err(err) => return Err(DorpErr::GliumCreation("GlutinWindowBuilder Build Glium", err)),
                                 };
                             match facade.get_window() {
                                 Some(window) => window,
-                                None => return Err(WindowErr::Get("Facade Get Window")),
+                                None => return Err(DorpErr::Base("Facade Get Window was none")),
                             }.set_position(((resolution.0 - self.dimensions.0) / 2) as i32, ((resolution.1 - self.dimensions.1) / 2) as i32);
                             facade
                         },
@@ -183,11 +145,11 @@ impl WindowBuilder {
                                 .with_vsync()
                                 .build_glium() {
                                     Ok(facade) => facade,
-                                    Err(err) => return Err(WindowErr::GliumCreation("GlutinWindowBuilder Build Glium", err)),
+                                    Err(err) => return Err(DorpErr::GliumCreation("GlutinWindowBuilder Build Glium", err)),
                                 };
                             match facade.get_window() {
                                 Some(window) => window,
-                                None => return Err(WindowErr::Get("Facade Get Window")),
+                                None => return Err(DorpErr::Base("Facade Get Window was none")),
                             }.set_position(0, 0);
                             facade
                         },
@@ -204,43 +166,4 @@ enum Windowed {
     Windowed,
     //Fullscreen,
     Borderless,
-}
-
-#[derive(Debug)]
-pub enum WindowErr {
-    Get(&'static str),
-    // VertexBufferCreation(&'static str, glium::vertex::BufferCreationError),
-    // IndexBufferCreation(&'static str, glium::index::BufferCreationError),
-    GliumCreation(&'static str, GliumCreationError<CreationError>),
-    // ProgramCreation(&'static str, ProgramCreationError),
-    // TextureCreation(&'static str, glium::texture::TextureCreationError),
-    // Image(&'static str, ImageError),
-}
-
-impl fmt::Display for WindowErr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            WindowErr::Get(_) => write!(f, "Get was None"),
-            // WindowErr::VertexBufferCreation(_, ref err) => err.fmt(f),
-            // WindowErr::IndexBufferCreation(_, ref err) => err.fmt(f),
-            WindowErr::GliumCreation(_, ref err) => err.fmt(f),
-            // WindowErr::ProgramCreation(_, ref err) => err.fmt(f),
-            // WindowErr::TextureCreation(_, ref err) => err.fmt(f),
-            // WindowErr::Image(_, ref err) => err.fmt(f),
-        }
-    }
-}
-
-impl Error for WindowErr {
-    fn description(&self) -> &str {
-        match *self {
-            WindowErr::Get(_) => "Get was None",
-            // WindowErr::VertexBufferCreation(_, ref err) => err.description(),
-            // WindowErr::IndexBufferCreation(_, ref err) => err.description(),
-            WindowErr::GliumCreation(_, ref err) => err.description(),
-            // WindowErr::ProgramCreation(_, ref err) => err.description(),
-            // WindowErr::TextureCreation(_, ref err) => err.description(),
-            // WindowErr::Image(_, ref err) => err.description(),
-        }
-    }
 }

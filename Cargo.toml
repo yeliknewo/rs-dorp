@@ -1,6 +1,6 @@
 [package]
 name = "dorp"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["Kiley Owen <owenk@wit.edu>"]
 
 [dependencies]

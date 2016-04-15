@@ -7,9 +7,9 @@ mod map_3d;
 mod map_3d_coords;
 mod scene;
 
-pub use self::transform::{Transform, TransformErr};
-pub use self::renderables::{Renderable, RenderableErr, RenderableTex2, RenderableSolidColor, RenderableVertexColor};
-pub use self::named::{Named, NamedErr};
+pub use self::transform::{Transform};
+pub use self::renderables::{Renderable, RenderableTex2, RenderableSolidColor, RenderableVertexColor};
+pub use self::named::{Named};
 pub use self::map_2d::{Map2d};
 pub use self::map_2d_coords::{Map2dCoords};
 pub use self::map_3d::{Map3d, Map3dErr};

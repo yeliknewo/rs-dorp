@@ -1,11 +1,10 @@
-use std::fmt;
 use std::sync::{Arc};
-use std::error::Error;
 
 use logic::{Id, IdManager, IdType};
 use math::{Mat4};
-use graphics::{Window, WindowErr, SyncData, Renderers};
-use graphics::texture2d::{Vertex, Index, DrawMethod, RendererTex2Err};
+use graphics::{Window, SyncData, Renderers};
+use graphics::texture2d::{Vertex, Index, DrawMethod};
+use err::DorpErr;
 
 #[derive(Debug)]
 struct Changes {
@@ -90,13 +89,13 @@ impl RenderableTex2 {
         }
     }
 
-    pub fn render(&mut self, window: &mut Window, sync_data: &mut SyncData, renderers: &mut Renderers) -> Result<(), RenderableTex2Err> {
+    pub fn render(&mut self, window: &mut Window, sync_data: &mut SyncData, renderers: &mut Renderers) -> Result<(), DorpErr> {
         if self.changes.dirty_render {
             match self.changes.vertices.clone() {
                 Some(vertices) => {
                     match renderers.get_mut_texture2d().set_vertices(self.vertex_id, window, vertices) {
                         Ok(()) => (),
-                        Err(err) => return Err(RenderableTex2Err::RendererTex2("Renderers Get Mut Tex2 Set Vertices", err)),
+                        Err(err) => return Err(DorpErr::Dorp("Renderers Get Mut Tex2 Set Vertices", Box::new(err))),
                     }
                 },
                 None => (),
@@ -105,7 +104,7 @@ impl RenderableTex2 {
                 Some(indices) => {
                     match renderers.get_mut_texture2d().set_indices(self.index_id, window, indices) {
                         Ok(()) => (),
-                        Err(err) => return Err(RenderableTex2Err::RendererTex2("Renderers Get Mut Tex2 Set Indices", err)),
+                        Err(err) => return Err(DorpErr::Dorp("Renderers Get Mut Tex2 Set Indices", Box::new(err))),
                     }
                 },
                 None => (),
@@ -114,7 +113,7 @@ impl RenderableTex2 {
                 Some(texture) => {
                     match renderers.get_mut_texture2d().set_texture(self.texture_id, window, texture) {
                         Ok(()) => (),
-                        Err(err) => return Err(RenderableTex2Err::RendererTex2("Renderers Get Mut Texture2d Set Texture", err)),
+                        Err(err) => return Err(DorpErr::Dorp("Renderers Get Mut Texture2d Set Texture", Box::new(err))),
                     }
                 },
                 None => (),
@@ -265,32 +264,5 @@ impl RenderableTex2 {
 
     pub fn get_model_id(&self) -> Id {
         self.model_id
-    }
-}
-
-#[derive(Debug)]
-pub enum RenderableTex2Err {
-    Poison(&'static str),
-    Window(&'static str, WindowErr),
-    RendererTex2(&'static str, RendererTex2Err),
-}
-
-impl fmt::Display for RenderableTex2Err {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            RenderableTex2Err::Poison(_) => write!(f, "Thread was Poisoned During R/W"),
-            RenderableTex2Err::Window(_, ref err) => err.fmt(f),
-            RenderableTex2Err::RendererTex2(_, ref err) => err.fmt(f),
-        }
-    }
-}
-
-impl Error for RenderableTex2Err {
-    fn description(&self) -> &str {
-        match *self {
-            RenderableTex2Err::Poison(_) => "Thread was Poisoned",
-            RenderableTex2Err::Window(_, ref err) => err.description(),
-            RenderableTex2Err::RendererTex2(_, ref err) => err.description(),
-        }
     }
 }

@@ -1,18 +1,17 @@
 use std::sync::{Arc};
-use std::error::Error;
-use std::fmt;
 use std::collections::{HashMap};
 use glium::Frame as GliumFrame;
 use glium::texture::texture2d::{Texture2d};
 use glium::texture::{RawImage2d};
-use glium::{Surface, DrawError, VertexBuffer, DrawParameters, IndexBuffer, Program, ProgramCreationError};
+use glium::{Surface, VertexBuffer, DrawParameters, IndexBuffer, Program};
 use glium;
-use image::{load_from_memory, ImageError};
+use image::{load_from_memory};
 
 use logic::{Id};
 use components::{Renderable};
 use graphics::{Window, SyncData};
 use graphics::texture2d::{Vertex, Index, DrawMethod, method_to_parameters, init_vertex};
+use err::DorpErr;
 
 #[derive(Debug)]
 pub struct RendererTex2 {
@@ -24,7 +23,7 @@ pub struct RendererTex2 {
 }
 
 impl RendererTex2 {
-    pub fn new(window: &mut Window) -> Result<RendererTex2, RendererTex2Err> {
+    pub fn new(window: &mut Window) -> Result<RendererTex2, DorpErr> {
         init_vertex();
         let vertex_shader_src = r#"
             #version 140
@@ -64,36 +63,36 @@ impl RendererTex2 {
                 draw_parameters: HashMap::new(),
                 program: match Program::from_source(window.get_facade(), vertex_shader_src, fragment_shader_src, None) {
                     Ok(program) => program,
-                    Err(err) => return Err(RendererTex2Err::ProgramCreation("Program From Source", err)),
+                    Err(err) => return Err(DorpErr::GliumProgramCreation("Program From Source", err)),
                 }
             }
         )
     }
 
-    pub fn set_vertices(&mut self, id: Id, window: &mut Window, vertices: Vec<Vertex>) -> Result<(), RendererTex2Err> {
+    pub fn set_vertices(&mut self, id: Id, window: &mut Window, vertices: Vec<Vertex>) -> Result<(), DorpErr> {
         self.vertex_buffers.insert(id, match VertexBuffer::new(window.get_facade(), &vertices) {
             Ok(buffer) => buffer,
-            Err(err) => return Err(RendererTex2Err::VertexBufferCreation("VertexBuffer New", err)),
+            Err(err) => return Err(DorpErr::GliumVertexBufferCreation("VertexBuffer New", err)),
         });
         Ok(())
     }
 
-    pub fn set_indices(&mut self, id: Id, window: &mut Window, indices: Vec<Index>) -> Result<(), RendererTex2Err> {
+    pub fn set_indices(&mut self, id: Id, window: &mut Window, indices: Vec<Index>) -> Result<(), DorpErr> {
         self.index_buffers.insert(id, match IndexBuffer::new(window.get_facade(), glium::index::PrimitiveType::TrianglesList, &indices) {
             Ok(buffer) => buffer,
-            Err(err) => return Err(RendererTex2Err::IndexBufferCreation("IndexBuffer New", err)),
+            Err(err) => return Err(DorpErr::GliumIndexBufferCreation("IndexBuffer New", err)),
         });
         Ok(())
     }
 
-    pub fn set_texture(&mut self, id: Id, window: &mut Window, data: &[u8]) -> Result<(), RendererTex2Err> {
+    pub fn set_texture(&mut self, id: Id, window: &mut Window, data: &[u8]) -> Result<(), DorpErr> {
         let texture = match load_from_memory(data) {
             Ok(texture) => texture,
-            Err(err) => return Err(RendererTex2Err::Image("Load From Memory data", err)),
+            Err(err) => return Err(DorpErr::Image("Load From Memory data", err)),
         }.to_rgba();
         self.texture_buffers.insert(id, match Texture2d::new(window.get_facade(), RawImage2d::from_raw_rgba_reversed(texture.clone().into_raw(), texture.dimensions())) {
             Ok(texture) => texture,
-            Err(err) => return Err(RendererTex2Err::TextureCreation("Texture2d New", err)),
+            Err(err) => return Err(DorpErr::GliumTextureCreation("Texture2d New", err)),
         });
         Ok(())
     }
@@ -102,86 +101,47 @@ impl RendererTex2 {
         self.draw_parameters.insert(id, method_to_parameters(draw_method));
     }
 
-    pub fn render(&mut self, frame: &mut GliumFrame, renderable: Arc<Renderable>, sync_data: &SyncData) -> Result<(), RendererTex2Err> {
+    pub fn render(&mut self, frame: &mut GliumFrame, renderable: Arc<Renderable>, sync_data: &SyncData) -> Result<(), DorpErr> {
         let renderable_tex2 = match renderable.get_texture2d() {
             Some(renderable) => renderable,
-            None => return Err(RendererTex2Err::Get("Renderable Get Tex2")),
+            None => return Err(DorpErr::Base("Renderable Get Tex2 was none")),
         };
         match frame.draw(
             match self.vertex_buffers.get(&renderable_tex2.get_vertex_id()) {
                 Some(vertices) => vertices,
-                None => return Err(RendererTex2Err::Get("Self VertexBuffers Get")),
+                None => return Err(DorpErr::Base("Self VertexBuffers Get was none")),
             },
             match self.index_buffers.get(&renderable_tex2.get_index_id()) {
                 Some(indices) => indices,
-                None => return Err(RendererTex2Err::Get("Self index_buffers Get")),
+                None => return Err(DorpErr::Base("Self index_buffers Get was none")),
             },
             &self.program,
             &uniform!(
                 tex: match self.texture_buffers.get(&renderable_tex2.get_texture_id()) {
                     Some(texture) => texture,
-                    None => return Err(RendererTex2Err::Get("Self Texture Buffers Get")),
+                    None => return Err(DorpErr::Base("Self Texture Buffers Get was none")),
                 },
                 perspective: match sync_data.get_matrix(renderable_tex2.get_perspective_id()) {
                     Some(perspective) => *perspective,
-                    None => return Err(RendererTex2Err::Get("Matrix Data Get Matrix")),
+                    None => return Err(DorpErr::Base("Matrix Data Get Matrix was none")),
                 },
                 view: match sync_data.get_matrix(renderable_tex2.get_view_id()) {
                     Some(view) => *view,
-                    None => return Err(RendererTex2Err::Get("Matrix Data Get Matrix")),
+                    None => return Err(DorpErr::Base("Matrix Data Get Matrix was none")),
                 },
                 model: match sync_data.get_matrix(renderable_tex2.get_model_id()) {
                     Some(model) => *model,
-                    None => return Err(RendererTex2Err::Get("Matrix Data Get Matrix")),
+                    None => return Err(DorpErr::Base("Matrix Data Get Matrix was none")),
                 }
             ),
             match self.draw_parameters.get(&renderable_tex2.get_draw_method_id()) {
                 Some(dp) => dp,
-                None => return Err(RendererTex2Err::Get("Self Draw parameters Get")),
+                None => return Err(DorpErr::Base("Self Draw parameters Get was none")),
             },
         ) {
             Ok(()) => (),
-            Err(err) => return Err(RendererTex2Err::Draw("Frame Draw", err)),
+            Err(err) => return Err(DorpErr::GliumDraw("Frame Draw", err)),
         }
         Ok(())
-    }
-}
-
-#[derive(Debug)]
-pub enum RendererTex2Err {
-    Get(&'static str),
-    Draw(&'static str, DrawError),
-    ProgramCreation(&'static str, ProgramCreationError),
-    VertexBufferCreation(&'static str, glium::vertex::BufferCreationError),
-    IndexBufferCreation(&'static str, glium::index::BufferCreationError),
-    TextureCreation(&'static str, glium::texture::TextureCreationError),
-    Image(&'static str, ImageError),
-}
-
-impl fmt::Display for RendererTex2Err {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            RendererTex2Err::Get(_) => write!(f, "Get was None"),
-            RendererTex2Err::Draw(_, ref err) => err.fmt(f),
-            RendererTex2Err::ProgramCreation(_, ref err) => err.fmt(f),
-            RendererTex2Err::VertexBufferCreation(_, ref err) => err.fmt(f),
-            RendererTex2Err::IndexBufferCreation(_, ref err) => err.fmt(f),
-            RendererTex2Err::TextureCreation(_, ref err) => err.fmt(f),
-            RendererTex2Err::Image(_, ref err) => err.fmt(f),
-        }
-    }
-}
-
-impl Error for RendererTex2Err {
-    fn description(&self) -> &str {
-        match *self {
-            RendererTex2Err::Get(_) => "Get was None",
-            RendererTex2Err::Draw(_, ref err) => err.description(),
-            RendererTex2Err::ProgramCreation(_, ref err) => err.description(),
-            RendererTex2Err::VertexBufferCreation(_, ref err) => err.description(),
-            RendererTex2Err::IndexBufferCreation(_, ref err) => err.description(),
-            RendererTex2Err::TextureCreation(_, ref err) => err.description(),
-            RendererTex2Err::Image(_, ref err) => err.description(),
-        }
     }
 }
