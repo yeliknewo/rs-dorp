@@ -216,7 +216,7 @@ impl<T: Entity<T>> Game<T> {
                     None => return Err(DorpErr::Base("Arc Get Mut Self Matrix Data was none")),
                 }, &mut renderers) {
                 Ok(()) => (),
-                Err(err) => return Err(DorpErr::Error("Entity Render", err)),
+                Err(err) => return Err(DorpErr::Dorp("Entity Render", Box::new(err))),
             }
         }
         match world.tick_mut() {
@@ -302,7 +302,7 @@ impl<T: Entity<T>> Game<T> {
                         None => return Err(DorpErr::Base("Arc Get Mut Self Matrix Data was none")),
                     }) {
                         Ok(()) => (),
-                        Err(err) => return Err(DorpErr::Error("Entity Tick Mut", err)),
+                        Err(err) => return Err(DorpErr::Dorp("Entity Tick Mut", Box::new(err))),
                     }
                     match world.get_mut_entities() {
                         Ok(entities) => {

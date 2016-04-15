@@ -12,6 +12,6 @@ pub use self::renderables::{Renderable, RenderableTex2, RenderableSolidColor, Re
 pub use self::named::{Named};
 pub use self::map_2d::{Map2d};
 pub use self::map_2d_coords::{Map2dCoords};
-pub use self::map_3d::{Map3d, Map3dErr};
+pub use self::map_3d::{Map3d};
 pub use self::map_3d_coords::{Map3dCoords};
 pub use self::scene::{Scene};

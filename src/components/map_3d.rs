@@ -1,9 +1,8 @@
 use std::collections::{HashMap};
 use std::hash::{Hash};
-use std::error::Error;
-use std::fmt;
 
 use logic::{Id};
+use err::DorpErr;
 
 #[derive(Debug)]
 pub struct Map3d<T: Hash + Eq + Copy> {
@@ -31,7 +30,7 @@ impl<T: Hash + Eq + Copy> Map3d<T> {
         }
     }
 
-    pub fn insert(&mut self, x: T, y: T, z: T, id: Id) -> Result<(), Map3dErr> {
+    pub fn insert(&mut self, x: T, y: T, z: T, id: Id) -> Result<(), DorpErr> {
         if !self.tiles.contains_key(&z) {
             self.tiles.insert(z, HashMap::new());
         }
@@ -44,10 +43,10 @@ impl<T: Hash + Eq + Copy> Map3d<T> {
                     Some(mut line) => {
                         line.insert(x, id);
                     },
-                    None => return Err(Map3dErr::Get("Plane Get Mut Y")),
+                    None => return Err(DorpErr::Base("Plane Get Mut Y was none")),
                 }
             },
-            None => return Err(Map3dErr::Get("Self Tiles Get Mut Z")),
+            None => return Err(DorpErr::Base("Self Tiles Get Mut Z was none")),
         }
         Ok(())
     }
@@ -71,29 +70,5 @@ impl<T: Hash + Eq + Copy> Map3d<T> {
 
     pub fn is_dirty(&self) -> bool {
         self.dirty_tiles
-    }
-}
-
-#[derive(Debug)]
-pub enum Map3dErr {
-    // World(&'static str, WorldErr),
-    Get(&'static str),
-}
-
-impl fmt::Display for Map3dErr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            // NamedErr::World(_, ref err) => err.fmt(f),
-            Map3dErr::Get(_) => write!(f, "Get was None"),
-        }
-    }
-}
-
-impl Error for Map3dErr {
-    fn description(&self) -> &str {
-        match *self {
-            // NamedErr::World(_, ref err) => err.description(),
-            Map3dErr::Get(_) => "Get was None",
-        }
     }
 }

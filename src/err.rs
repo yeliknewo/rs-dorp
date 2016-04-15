@@ -1,6 +1,5 @@
 use glium;
 use image;
-use std;
 
 #[derive(Debug)]
 pub enum DorpErr {
@@ -16,7 +15,6 @@ pub enum DorpErr {
     GliumIndexBufferCreation(&'static str, glium::index::BufferCreationError),
     GliumTextureCreation(&'static str, glium::texture::TextureCreationError),
     Image(&'static str, image::ImageError),
-    Error(&'static str, Box<std::error::Error>),
     GliumSwapBuffers(&'static str, glium::SwapBuffersError),
     GliumCreation(&'static str, glium::GliumCreationError<glium::glutin::CreationError>),
 }
