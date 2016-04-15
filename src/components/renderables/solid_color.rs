@@ -60,7 +60,6 @@ pub struct RenderableSolidColor {
 }
 
 impl RenderableSolidColor {
-
     pub fn new(manager: &mut IdManager) -> RenderableSolidColor {
         RenderableSolidColor {
             vertex_id: Id::new(manager, IdType::Vertex),
@@ -73,7 +72,6 @@ impl RenderableSolidColor {
             changes: Changes::new(),
         }
     }
-
 
     pub fn new_from(other: Arc<RenderableSolidColor>) -> RenderableSolidColor {
         RenderableSolidColor {
@@ -136,113 +134,92 @@ impl RenderableSolidColor {
         Ok(())
     }
 
-
     pub fn set_vertices(&mut self, vertices: Vec<Vertex>) {
         self.changes.vertices = Some(vertices);
         self.changes.dirty_render = true;
     }
-
 
     pub fn set_indices(&mut self, indices: Vec<Index>) {
         self.changes.indices = Some(indices);
         self.changes.dirty_render = true;
     }
 
-
     pub fn set_draw_method(&mut self, draw_method: DrawMethod) {
         self.changes.draw_method = Some(draw_method);
         self.changes.dirty_render = true;
     }
-
 
     pub fn set_perspective(&mut self, matrix: Mat4) {
         self.changes.perspective = Some((matrix, matrix.to_inverse()));
         self.changes.dirty_render = true;
     }
 
-
     pub fn set_view(&mut self, matrix: Mat4) {
         self.changes.view = Some((matrix, matrix.to_inverse()));
         self.changes.dirty_render = true;
     }
-
 
     pub fn set_model(&mut self, matrix: Mat4) {
         self.changes.model = Some((matrix, matrix.to_inverse()));
         self.changes.dirty_render = true;
     }
 
-
     pub fn set_color(&mut self, color: Vec4) {
         self.changes.color = Some(color);
         self.changes.dirty_render = true;
     }
 
-
     pub fn set_vertex_id(&mut self, id: Id) {
         self.vertex_id = id;
     }
-
 
     pub fn set_index_id(&mut self, id: Id) {
         self.index_id = id;
     }
 
-
     pub fn set_draw_method_id(&mut self, id: Id) {
         self.draw_method_id = id;
     }
-
 
     pub fn set_perspective_id(&mut self, id: Id) {
         self.perspective_id = id;
     }
 
-
     pub fn set_view_id(&mut self, id: Id) {
         self.view_id = id;
     }
-
 
     pub fn set_model_id(&mut self, id: Id) {
         self.model_id = id;
     }
 
-
     pub fn set_color_id(&mut self, id: Id) {
         self.color_id = id;
     }
-
 
     pub fn get_vertex_id(&self) -> Id {
         self.vertex_id
     }
 
-
     pub fn get_index_id(&self) -> Id {
         self.index_id
     }
-
 
     pub fn get_draw_method_id(&self) -> Id {
         self.draw_method_id
     }
 
-
     pub fn get_perspective_id(&self) -> Id {
         self.perspective_id
     }
-
 
     pub fn get_view_id(&self) -> Id {
         self.view_id
     }
 
-
     pub fn get_model_id(&self) -> Id {
         self.model_id
     }
-
 
     pub fn get_color_id(&self) -> Id {
         self.color_id

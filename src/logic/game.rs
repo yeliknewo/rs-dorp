@@ -298,7 +298,10 @@ impl<T: Entity<T>> Game<T> {
                     match match Arc::get_mut(&mut entity) {
                         Some(entity) => entity,
                         None => return Err(GameErr::GetMut("Arc Get Mut Entity")),
-                    }.tick_mut(self.tick_count, manager, world) {
+                    }.tick_mut(self.tick_count, manager, world, match Arc::get_mut(&mut self.sync_data) {
+                        Some(matrix_data) => matrix_data,
+                        None => return Err(GameErr::GetMut("Arc Get Mut Self Matrix Data")),
+                    }) {
                         Ok(()) => (),
                         Err(err) => return Err(GameErr::Entity("Entity Tick Mut", err)),
                     }

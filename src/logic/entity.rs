@@ -7,7 +7,7 @@ use components::{Renderable, Named, Transform};
 
 pub trait Entity<T: Entity<T>> : Send + Sync {
     fn tick(&self, Arc<TickCount>, Arc<f64>, Arc<World<T>>) -> Result<(), Box<Error>>;
-    fn tick_mut(&mut self, TickCount, &mut IdManager, &mut World<T>) -> Result<(), Box<Error>>;
+    fn tick_mut(&mut self, TickCount, &mut IdManager, &mut World<T>, &mut SyncData) -> Result<(), Box<Error>>;
     fn render(&mut self, &mut Window, &mut SyncData, &mut Renderers) -> Result<(), Box<Error>>;
     fn get_renderable(&self) -> Option<Arc<Renderable>>;
     fn get_named(&self) -> Option<Arc<Named>>;
