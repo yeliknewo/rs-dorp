@@ -133,9 +133,6 @@ impl WindowBuilder {
                             }.set_position(((resolution.0 - self.dimensions.0) / 2) as i32, ((resolution.1 - self.dimensions.1) / 2) as i32);
                             facade
                         },
-                        // Windowed::Fullscreen => {
-                        //
-                        // },
                         Windowed::Borderless => {
                             let facade = match GlutinWindowBuilder::new()
                                 .with_title(self.title)
@@ -164,6 +161,5 @@ impl WindowBuilder {
 
 enum Windowed {
     Windowed,
-    //Fullscreen,
     Borderless,
 }

@@ -1,4 +1,3 @@
-use std::sync::{Arc};
 use std::collections::{HashMap};
 use glium::Frame as GliumFrame;
 use glium::texture::texture2d::{Texture2d};
@@ -101,7 +100,7 @@ impl RendererTex2 {
         self.draw_parameters.insert(id, method_to_parameters(draw_method));
     }
 
-    pub fn render(&mut self, frame: &mut GliumFrame, renderable: Arc<Renderable>, sync_data: &SyncData) -> Result<(), DorpErr> {
+    pub fn render(&mut self, frame: &mut GliumFrame, renderable: &Renderable, sync_data: &SyncData) -> Result<(), DorpErr> {
         let renderable_tex2 = match renderable.get_texture2d() {
             Some(renderable) => renderable,
             None => return Err(DorpErr::Base("Renderable Get Tex2 was none")),

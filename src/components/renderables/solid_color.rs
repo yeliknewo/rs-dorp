@@ -1,12 +1,10 @@
-use std::sync::{Arc};
-
 use logic::{Id, IdManager, IdType};
 use graphics::{Window, SyncData, Renderers};
 use graphics::solid_color::{Vertex, Index, DrawMethod};
 use math::{Mat4, Vec4};
 use err::DorpErr;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Changes {
     vertices: Option<Vec<Vertex>>,
     indices: Option<Vec<Index>>,
@@ -46,7 +44,7 @@ impl Changes {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RenderableSolidColor {
     vertex_id: Id,
     index_id: Id,
@@ -69,19 +67,6 @@ impl RenderableSolidColor {
             model_id: Id::new(manager, IdType::Matrix),
             color_id: Id::new(manager, IdType::Color),
             changes: Changes::new(),
-        }
-    }
-
-    pub fn new_from(other: Arc<RenderableSolidColor>) -> RenderableSolidColor {
-        RenderableSolidColor {
-            vertex_id: other.vertex_id,
-            index_id: other.index_id,
-            draw_method_id: other.draw_method_id,
-            perspective_id: other.perspective_id,
-            view_id: other.view_id,
-            model_id: other.model_id,
-            color_id: other.color_id,
-            changes: Changes::new_from(&other.changes),
         }
     }
 

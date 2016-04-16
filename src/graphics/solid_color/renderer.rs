@@ -1,4 +1,3 @@
-use std::sync::{Arc};
 use std::collections::{HashMap};
 use glium::Frame as GliumFrame;
 use glium::{Surface, VertexBuffer, IndexBuffer, DrawParameters, Program};
@@ -79,7 +78,7 @@ impl RendererSolidColor {
         self.draw_parameters.insert(id, method_to_parameters(draw_method));
     }
 
-    pub fn render(&mut self, frame: &mut GliumFrame, renderable: Arc<Renderable>, sync_data: &SyncData) -> Result<(), DorpErr> {
+    pub fn render(&mut self, frame: &mut GliumFrame, renderable: &Renderable, sync_data: &SyncData) -> Result<(), DorpErr> {
         let renderable_solid = match renderable.get_solid_color() {
             Some(renderable) => renderable,
             None => return Err(DorpErr::Base("Renderable Get Solid Color was none")),

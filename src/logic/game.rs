@@ -18,11 +18,8 @@ pub struct Game<T: Entity<T>> {
 
 impl<T: Entity<T>> Game<T> {
     pub fn new(thread_count: u32, resolution: Vec2) -> Game<T> {
-        let keyboard = Arc::new(Keyboard::new());
-        let mouse = Arc::new(Mouse::new());
-        let display = Arc::new(Display::new(resolution));
         Game {
-            world: Arc::new(World::new(keyboard.clone(), mouse.clone(), display.clone())),
+            world: Arc::new(World::new(Keyboard::new(), Mouse::new(), Display::new(resolution))),
             sync_data: Arc::new(SyncData::new()),
             thread_pool: Pool::new(thread_count),
             tick_count: 0,
@@ -50,50 +47,34 @@ impl<T: Entity<T>> Game<T> {
 
     fn update_keyboard(&mut self, tick_number: u64, key_code: KeyCode, element_state: ButtonState) -> Result<(), DorpErr> {
         match Arc::get_mut(&mut self.world) {
-            Some(world) => {
-                match world.set_key(key_code, Button::new(tick_number, element_state)) {
-                    Ok(_) => Ok(()),
-                    Err(err) => Err(DorpErr::Dorp("World Set Key", Box::new(err))),
-                }
-            },
-            None => Err(DorpErr::Base("Arc Get Mut Self World was none")),
+            Some(world) => world.set_key(key_code, Button::new(tick_number, element_state)),
+            None => return Err(DorpErr::Base("Arc Get Mut Self World was none")),
         }
+        Ok(())
     }
 
     fn update_mouse_button(&mut self, tick_number: u64, mouse_button: MouseButton, element_state: ButtonState) -> Result<(), DorpErr> {
         match Arc::get_mut(&mut self.world) {
-            Some(world) => {
-                match world.set_mouse_button(mouse_button, Button::new(tick_number, element_state)) {
-                    Ok(()) => Ok(()),
-                    Err(err) => Err(DorpErr::Dorp("World Set Mouse Button", Box::new(err))),
-                }
-            }
-            None => Err(DorpErr::Base("Arc Get Mut Self World was none")),
+            Some(world) => world.set_mouse_button(mouse_button, Button::new(tick_number, element_state)),
+            None => return Err(DorpErr::Base("Arc Get Mut Self World was none")),
         }
+        Ok(())
     }
 
     fn update_mouse_pos(&mut self, mouse_pos: (i32, i32)) -> Result<(), DorpErr> {
         match Arc::get_mut(&mut self.world) {
-            Some(world) => {
-                match world.set_mouse_position(Vec2::from([mouse_pos.0 as f32, mouse_pos.1 as f32])) {
-                    Ok(()) => Ok(()),
-                    Err(err) => Err(DorpErr::Dorp("World Set Mouse Position", Box::new(err))),
-                }
-            },
-            None => Err(DorpErr::Base("Arc Get Mut Self World was none")),
+            Some(world) => world.set_mouse_position(Vec2::from([mouse_pos.0 as f32, mouse_pos.1 as f32])),
+            None => return Err(DorpErr::Base("Arc Get Mut Self World was none")),
         }
+        Ok(())
     }
 
     fn update_resolution(&mut self, resolution: (u32, u32)) -> Result<(), DorpErr> {
         match Arc::get_mut(&mut self.world) {
-            Some(world) => {
-                match world.set_resolution(Vec2::from([resolution.0 as f32, resolution.1 as f32])) {
-                    Ok(()) => Ok(()),
-                    Err(err) => Err(DorpErr::Dorp("World Set Resolution", Box::new(err))),
-                }
-            },
-            None => Err(DorpErr::Base("Arc Get Mut Self World was none")),
+            Some(world) => world.set_resolution(Vec2::from([resolution.0 as f32, resolution.1 as f32])),
+            None => return Err(DorpErr::Base("Arc Get Mut Self World was none")),
         }
+        Ok(())
     }
 
     pub fn run(&mut self, window: &mut Window, manager: &mut IdManager) -> Result<(), DorpErr> {
@@ -204,14 +185,8 @@ impl<T: Entity<T>> Game<T> {
             Some(world) => world,
             None => return Err(DorpErr::Base("Arc Get Mut Self World was none")),
         };
-        for (_, entity) in match world.get_mut_entities() {
-            Ok(entity) => entity,
-            Err(err) => return Err(DorpErr::Dorp("World Get Mut Entity", Box::new(err))),
-        }.iter_mut() {
-            match match Arc::get_mut(entity) {
-                    Some(entity) => entity,
-                    None => return Err(DorpErr::Base("Arc Get Mut Entity was none")),
-                }.render(window, match Arc::get_mut(&mut self.sync_data) {
+        for (_, entity) in world.get_mut_entities().iter_mut() {
+            match entity.render(window, match Arc::get_mut(&mut self.sync_data) {
                     Some(sync_data) => sync_data,
                     None => return Err(DorpErr::Base("Arc Get Mut Self Matrix Data was none")),
                 }, &mut renderers) {
@@ -219,22 +194,10 @@ impl<T: Entity<T>> Game<T> {
                 Err(err) => return Err(DorpErr::Dorp("Entity Render", Box::new(err))),
             }
         }
-        match world.tick_mut() {
-            Ok(()) => (),
-            Err(err) => return Err(DorpErr::Dorp("World Tick Mut", Box::new(err))),
-        }
+        world.tick_mut();
         let mut frame = window.frame(renderers);
-        for entry in match world.get_mut_entities() {
-            Ok(entity) => entity,
-            Err(err) => {
-                match frame.end() {
-                    Ok(_) => (),
-                    Err(err) => return Err(DorpErr::Dorp("Frame End", Box::new(err))),
-                };
-                return Err(DorpErr::Dorp("World Get Mut Entity Data", Box::new(err)))
-            },
-        }.iter() {
-            match frame.draw_entity(entry.1.as_ref(), self.sync_data.as_ref()) {
+        for entry in world.get_mut_entities().iter() {
+            match frame.draw_entity(entry.1, self.sync_data.as_ref()) {
                 Ok(()) => (),
                 Err(err) => {
                     match frame.end() {
@@ -254,8 +217,7 @@ impl<T: Entity<T>> Game<T> {
     fn tick(&mut self, delta_time: f64, manager: &mut IdManager) -> Result<(), DorpErr> {
         {
             let world = self.world.clone();
-            let delta_time = Arc::new(delta_time);
-            let tick_count = Arc::new(self.tick_count);
+            let tick_count = self.tick_count;
             self.thread_pool.scoped(|scope| {
                 for entry in world.get_entities().iter() {
                     let entity = entry.1.clone();
@@ -274,42 +236,22 @@ impl<T: Entity<T>> Game<T> {
         match Arc::get_mut(&mut self.world)  {
             Some(world) => {
                 let mut keys = vec!();
-                match world.get_mut_entities() {
-                    Ok(entity) => {
-                        for key in entity.keys() {
-                            keys.push(key.clone());
-                        }
-                    },
-                    Err(err) => return Err(DorpErr::Dorp("World Get Mut Entity", Box::new(err))),
+                for key in world.get_entities().keys() {
+                    keys.push(key.clone());
                 }
                 for key in keys {
-                    let mut entity: Arc<T> = {
-                        match world.get_mut_entities() {
-                            Ok(entities) => {
-                                match entities.remove(&key) {
-                                    Some(entity) => entity,
-                                    None => return Err(DorpErr::Base("Entities Remove was none")),
-                                }
-                            },
-                            Err(err) => return Err(DorpErr::Dorp("World Get Mut Entities", Box::new(err))),
-                        }
-                    };
-                    match match Arc::get_mut(&mut entity) {
+                    let mut entity = match world.get_mut_entities().remove(&key) {
                         Some(entity) => entity,
-                        None => return Err(DorpErr::Base("Arc Get Mut Entity was none")),
-                    }.tick_mut(self.tick_count, manager, world, match Arc::get_mut(&mut self.sync_data) {
+                        None => return Err(DorpErr::Base("World Get Mut Entities Remove was None")),
+                    };
+                    match entity.tick_mut(self.tick_count, manager, world, match Arc::get_mut(&mut self.sync_data) {
                         Some(matrix_data) => matrix_data,
                         None => return Err(DorpErr::Base("Arc Get Mut Self Matrix Data was none")),
                     }) {
                         Ok(()) => (),
                         Err(err) => return Err(DorpErr::Dorp("Entity Tick Mut", Box::new(err))),
                     }
-                    match world.get_mut_entities() {
-                        Ok(entities) => {
-                            entities.insert(key, entity);
-                        }
-                        Err(err) => return Err(DorpErr::Dorp("World Get Mut Entity", Box::new(err))),
-                    }
+                    world.add_entity(entity);
                 }
             },
             None => return Err(DorpErr::Base("Arc Get Mut Self World was none")),

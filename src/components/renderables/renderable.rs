@@ -1,16 +1,14 @@
-use std::sync::{Arc};
-
 use graphics::{RendererType, Window, SyncData, Renderers};
 use components::renderables::{RenderableTex2, RenderableVertexColor, RenderableSolidColor};
 use math::{Mat4};
 use err::DorpErr;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Renderable {
     renderer_type: RendererType,
-    texture2d: Option<Arc<RenderableTex2>>,
-    vertex_color: Option<Arc<RenderableVertexColor>>,
-    solid_color: Option<Arc<RenderableSolidColor>>,
+    texture2d: Option<RenderableTex2>,
+    vertex_color: Option<RenderableVertexColor>,
+    solid_color: Option<RenderableSolidColor>,
 }
 
 impl Renderable {
@@ -20,30 +18,6 @@ impl Renderable {
             texture2d: None,
             vertex_color: None,
             solid_color: None,
-        }
-    }
-
-    pub fn new_from(other: Arc<Renderable>) -> Renderable {
-        Renderable {
-            renderer_type: other.renderer_type,
-            texture2d: match other.texture2d.clone() {
-                Some(tex2) => {
-                    Some(Arc::new(RenderableTex2::new_from(tex2)))
-                },
-                None => None,
-            },
-            vertex_color: match other.vertex_color.clone() {
-                Some(vertex) => {
-                    Some(Arc::new(RenderableVertexColor::new_from(vertex)))
-                },
-                None => None,
-            },
-            solid_color: match other.solid_color.clone() {
-                Some(solid) => {
-                    Some(Arc::new(RenderableSolidColor::new_from(solid)))
-                },
-                None => None,
-            }
         }
     }
 
@@ -96,19 +70,19 @@ impl Renderable {
 
 
     pub fn set_texture2d(&mut self, texture2d: RenderableTex2) {
-        self.texture2d = Some(Arc::new(texture2d));
+        self.texture2d = Some(texture2d);
         self.renderer_type = RendererType::Texture2d;
     }
 
 
     pub fn set_vertex_color(&mut self, vertex_color: RenderableVertexColor) {
-        self.vertex_color = Some(Arc::new(vertex_color));
+        self.vertex_color = Some(vertex_color);
         self.renderer_type = RendererType::VertexColor;
     }
 
 
     pub fn set_solid_color(&mut self, solid_color: RenderableSolidColor) {
-        self.solid_color = Some(Arc::new(solid_color));
+        self.solid_color = Some(solid_color);
         self.renderer_type = RendererType::SolidColor;
     }
 
@@ -118,41 +92,32 @@ impl Renderable {
     }
 
 
-    pub fn get_texture2d(&self) -> Option<Arc<RenderableTex2>> {
-        self.texture2d.clone()
+    pub fn get_texture2d(&self) -> Option<&RenderableTex2> {
+        self.texture2d.as_ref()
     }
 
 
-    pub fn get_solid_color(&self) -> Option<Arc<RenderableSolidColor>> {
-        self.solid_color.clone()
+    pub fn get_solid_color(&self) -> Option<&RenderableSolidColor> {
+        self.solid_color.as_ref()
     }
 
 
-    pub fn get_vertex_color(&self) -> Option<Arc<RenderableVertexColor>> {
-        self.vertex_color.clone()
+    pub fn get_vertex_color(&self) -> Option<&RenderableVertexColor> {
+        self.vertex_color.as_ref()
     }
 
 
     pub fn get_mut_texture2d(&mut self) -> Option<&mut RenderableTex2> {
-        match self.texture2d.as_mut() {
-            Some(texture2d) => Arc::get_mut(texture2d),
-            None => None,
-        }
+        self.texture2d.as_mut()
     }
 
 
     pub fn get_mut_solid_color(&mut self) -> Option<&mut RenderableSolidColor> {
-        match self.solid_color.as_mut() {
-            Some(solid_color) => Arc::get_mut(solid_color),
-            None => None,
-        }
+        self.solid_color.as_mut()
     }
 
 
     pub fn get_mut_vertex_color(&mut self) -> Option<&mut RenderableVertexColor> {
-        match self.vertex_color.as_mut() {
-            Some(vertex_color) => Arc::get_mut(vertex_color),
-            None => None,
-        }
+        self.vertex_color.as_mut()
     }
 }

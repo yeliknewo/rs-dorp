@@ -1,4 +1,3 @@
-use std::sync::{Arc};
 use std::collections::{HashMap};
 use glium::Frame as GliumFrame;
 use glium::{Surface, VertexBuffer, IndexBuffer, DrawParameters, Program};
@@ -82,7 +81,7 @@ impl RendererVertexColor {
         self.draw_parameters.insert(id, method_to_parameters(draw_method));
     }
 
-    pub fn render(&mut self, frame: &mut GliumFrame, renderable: Arc<Renderable>, sync_data: &SyncData) -> Result<(), DorpErr> {
+    pub fn render(&mut self, frame: &mut GliumFrame, renderable: &Renderable, sync_data: &SyncData) -> Result<(), DorpErr> {
         let renderable_vertex = match renderable.get_vertex_color() {
             Some(vertex) => vertex,
             None => return Err(DorpErr::Base("Renderable Get Vertex Color was none")),
