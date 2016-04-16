@@ -17,7 +17,7 @@ impl<T: Hash + Eq + Copy> Map2dCoords<T> {
         }
     }
 
-    pub fn register(&self, id: Id, map_2d: &mut Map2d<T>) {
+    pub fn register(&self, id: Id, map_2d: &mut Box<Map2d<T>>) {
         map_2d.insert(self.x, self.y, id);
     }
 

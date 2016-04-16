@@ -20,7 +20,7 @@ impl<T: Hash + Eq + Copy> Map3dCoords<T> {
         }
     }
 
-    pub fn register(&self, id: Id, map_3d: &mut Map3d<T>) -> Result<(), DorpErr> {
+    pub fn register(&self, id: Id, map_3d: &mut Box<Map3d<T>>) -> Result<(), DorpErr> {
         match map_3d.insert(self.x, self.y, self.z, id) {
             Ok(()) => Ok(()),
             Err(err) => return Err(DorpErr::Dorp("Map 3d insert, x, y, z, id", Box::new(err))),
