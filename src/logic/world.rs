@@ -116,8 +116,10 @@ impl<T: Entity<T>> World<T> {
     pub fn register_name(&mut self, id: Id, name: &'static str) -> Result<(), DorpErr> {
         if !self.names.contains_key(name) {
             self.names.insert(name, id);
+            Ok(())
+        } else {
+            Err(DorpErr::BaseString("Names already contains name: ".to_string() + name))
         }
-        return Err(DorpErr::BaseString("Names already contains name: ".to_string() + name));
     }
 
     pub fn deregister_name(&mut self, name: &'static str) -> Result<(), DorpErr> {
