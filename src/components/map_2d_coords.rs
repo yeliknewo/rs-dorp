@@ -3,7 +3,7 @@ use std::hash::Hash;
 use logic::{Id};
 use components::{Map2d};
 
-#[derive(Debug)]
+#[derive(Debug, Ord, Eq, PartialOrd, PartialEq)]
 pub struct Map2dCoords<T: Hash + Eq + Copy> {
     x: T,
     y: T,

@@ -4,7 +4,7 @@ use logic::{Id};
 use components::{Map3d};
 use err::DorpErr;
 
-#[derive(Debug)]
+#[derive(Debug, Ord, Eq, PartialOrd, PartialEq)]
 pub struct Map3dCoords<T: Hash + Eq + Copy> {
     x: T,
     y: T,
